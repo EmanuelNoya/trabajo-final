@@ -4,11 +4,19 @@ namespace App\Models;
 
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Notifications\Notifiable;
 
 class Usuario extends Authenticatable
 {
     use Notifiable;
+
+    public const ROLES = [
+        'docente' => 'Docente',
+        'responsable' => 'Responsable académico',
+        'analista' => 'Analista de datos',
+        'administrador' => 'Administrador',
+    ];
 
     protected $table = 'usuario';
 
@@ -30,6 +38,7 @@ class Usuario extends Authenticatable
         return [
             'hash_contrasena' => 'hashed',
             'activo' => 'boolean',
+            'fecha_desactivacion' => 'datetime'
         ];
     }
 
@@ -43,14 +52,14 @@ class Usuario extends Authenticatable
         return $this->hasMany(Curso::class, 'docente_id');
     }
 
+    public function desactivadoPor(): BelongsTo
+    {
+        return $this->belongsTo(Usuario::class, 'desactivado_por');
+    }
+
     public function rolLegible(): string
     {
-        return match ($this->rol) {
-            'docente' => 'Docente',
-            'responsable' => 'Responsable académico',
-            'analista' => 'Analista de datos',
-            'administrador' => 'Administrador',
-        };
+        return self::ROLES[$this->rol];
     }
 
     public function getEmailForPasswordReset(): string
