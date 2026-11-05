@@ -1,0 +1,10 @@
+legajo;apellido;nombre;documento;fecha_baja
+VINF00001;Estudiante;Prueba;30111222;
+VINF00002;Gómez;María Laura;38.456.789;
+VINF00003;Pérez;Juan;40123456;2026-04-20
+VINF00004;Núñez;Sofía;;
+VINF00002;Gómez;María;38456789;
+VINF00005;Ibáñez;;41222333;
+VINF00006;Acosta;Tomás;4122A333;
+VINF00007;Ruiz;Lucía;39888777;31/02/2026
+VINF00008;Sosa;Martín;37666555;15/08/2026

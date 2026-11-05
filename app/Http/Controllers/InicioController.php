@@ -12,7 +12,7 @@ class InicioController extends Controller
         return redirect()->route(match ($request->user()->rol) {
             'docente' => 'docente.inicio',
             'responsable' => 'responsable.inicio',
-            'analista' => 'analista.inicio',
+            'analista' => 'cursos.index',
             'administrador' => 'usuarios.index',
         });
     }

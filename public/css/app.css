@@ -42,6 +42,8 @@ label { display: block; font-weight: 600; margin-bottom: .35rem; }
 input[type=text],
 input[type=email],
 input[type=password],
+input[type=date],
+input[type=file],
 select {
     width: 100%;
     padding: .6rem .75rem;
@@ -98,3 +100,11 @@ a { color: var(--primario); }
 .etiqueta.activa { background: #ecfdf3; color: #067647; }
 .etiqueta.inactiva { background: #f2f4f7; color: #475467; }
 .detalle { font-size: .8rem; color: #667085; margin-top: .25rem; }
+
+h2 { font-size: 1.15rem; margin: 0 0 .75rem; }
+.seccion { margin-top: 1.5rem; }
+.titulo-tabla { margin: 0; padding: 1rem; border-bottom: 1px solid var(--borde); }
+.datos { display: grid; grid-template-columns: max-content 1fr; gap: .4rem 1.5rem; margin: 0; }
+.datos dt { font-weight: 600; color: #475467; }
+.datos dd { margin: 0; }
+.codigo { font-family: ui-monospace, Consolas, monospace; }

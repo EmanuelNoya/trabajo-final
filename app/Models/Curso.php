@@ -5,9 +5,12 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Curso extends Model
 {
+    public const MODALIDADES = ['A distancia', 'Presencial', 'Híbrida'];
+
     protected $table = 'curso';
 
     public $timestamps = false;
@@ -49,5 +52,12 @@ class Curso extends Model
     public function cargas(): HasMany
     {
         return $this->hasMany(CargaArchivo::class);
+    }
+
+    public function nominaVigente(): HasOne
+    {
+        return $this->hasOne(CargaArchivo::class)
+            ->where('tipo_archivo', 'nomina')
+            ->where('estado', 'vigente');
     }
 }

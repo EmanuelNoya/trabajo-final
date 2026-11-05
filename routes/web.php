@@ -4,6 +4,7 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RecuperacionContrasenaController;
 use App\Http\Controllers\InicioController;
 use App\Http\Controllers\Administrador\UsuarioController;
+use App\Http\Controllers\Analista\CursoController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('guest')->group(function () {
@@ -27,10 +28,16 @@ Route::middleware('auth')->group(function () {
 
     Route::view('/docente', 'inicio', ['titulo' => 'Mis cursos'])
         ->middleware('rol:docente')->name('docente.inicio');
+        
     Route::view('/responsable', 'inicio', ['titulo' => 'Cursos de la carrera'])
         ->middleware('rol:responsable')->name('responsable.inicio');
-    Route::view('/analista', 'inicio', ['titulo' => 'Incorporación de datos'])
-        ->middleware('rol:analista')->name('analista.inicio');
+
+    Route::middleware('rol:analista')->prefix('analista')->group(function () {
+        Route::resource('cursos', CursoController::class)->only(['index', 'create', 'store', 'show']);
+        Route::post('cursos/{curso}/nomina', [CursoController::class, 'incorporarNomina'])
+            ->name('cursos.nomina');
+    });
+
     Route::middleware('rol:administrador')->prefix('administrador')->group(function () {
         Route::resource('usuarios', UsuarioController::class)->except(['show', 'destroy']);
         Route::patch('usuarios/{usuario}/desactivar', [UsuarioController::class, 'desactivar'])
