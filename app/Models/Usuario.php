@@ -30,7 +30,6 @@ class Usuario extends Authenticatable
         ];
     }
 
-
     public function getAuthPasswordName(): string
     {
         return 'hash_contrasena';
@@ -40,4 +39,15 @@ class Usuario extends Authenticatable
     {
         return $this->hasMany(Curso::class, 'docente_id');
     }
+
+    public function rolLegible(): string
+    {
+        return match ($this->rol) {
+            'docente' => 'Docente',
+            'responsable' => 'Responsable académico',
+            'analista' => 'Analista de datos',
+            'administrador' => 'Administrador',
+        };
+    }
+
 }
