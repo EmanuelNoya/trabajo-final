@@ -2,7 +2,12 @@
 
 namespace Database\Seeders;
 
-//use App\Models\User;
+use App\Models\CargaArchivo;
+use App\Models\Carrera;
+use App\Models\Curso;
+use App\Models\Estudiante;
+use App\Models\Inscripcion;
+use App\Models\Usuario;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
@@ -10,16 +15,59 @@ class DatabaseSeeder extends Seeder
 {
     use WithoutModelEvents;
 
-    /**
-     * Seed the application's database.
-     */
     public function run(): void
     {
-        // User::factory(10)->create();
+        // Contraseña de prueba
+        $clave = 'Prueba.2026$';
 
-        /*User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-        ]);*/
+        $usuarios = [];
+        foreach (['docente', 'responsable', 'analista', 'administrador'] as $rol) {
+            $usuarios[$rol] = Usuario::create([
+                'nombre' => ucfirst($rol),
+                'apellido' => 'Prueba',
+                'correo' => "{$rol}@prueba.local",
+                'hash_contrasena' => $clave,
+                'rol' => $rol,
+            ]);
+        }
+
+        $carrera = Carrera::create([
+            'nombre' => 'Licenciatura en Informática',
+            'responsable_id' => $usuarios['responsable']->id,
+        ]);
+
+        $curso = Curso::create([
+            'carrera_id' => $carrera->id,
+            'docente_id' => $usuarios['docente']->id,
+            'asignatura' => 'Programación I',
+            'comision' => 'A',
+            'periodo_lectivo' => '2026-1C',
+            'modalidad' => 'Distancia',
+            'fecha_inicio' => '2026-03-16',
+            'fecha_fin' => '2026-07-10',
+        ]);
+
+        // Nómina mínima, para probar la trazabilidad y la restricción curso + estudiante
+        $carga = CargaArchivo::create([
+            'curso_id' => $curso->id,
+            'usuario_id' => $usuarios['analista']->id,
+            'tipo_archivo' => 'nomina',
+            'nombre_archivo' => 'nomina_prueba.csv',
+            'hash_archivo' => hash('sha256', 'nomina_prueba'),
+            'filas_validas' => 1,
+            'filas_rechazadas' => 0,
+        ]);
+
+        $estudiante = Estudiante::create([
+            'legajo' => 'VINF00001',
+            'apellido' => 'Estudiante',
+            'nombre' => 'Prueba',
+        ]);
+
+        Inscripcion::create([
+            'curso_id' => $curso->id,
+            'estudiante_id' => $estudiante->id,
+            'carga_id' => $carga->id,
+        ]);
     }
 }
