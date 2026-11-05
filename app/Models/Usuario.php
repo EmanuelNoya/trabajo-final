@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Usuario extends Authenticatable
 {
@@ -33,5 +34,10 @@ class Usuario extends Authenticatable
     public function getAuthPasswordName(): string
     {
         return 'hash_contrasena';
+    }
+
+    public function cursosDictados(): HasMany
+    {
+        return $this->hasMany(Curso::class, 'docente_id');
     }
 }
