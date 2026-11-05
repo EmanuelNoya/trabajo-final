@@ -13,7 +13,7 @@ class InicioController extends Controller
             'docente' => 'docente.inicio',
             'responsable' => 'responsable.inicio',
             'analista' => 'analista.inicio',
-            'administrador' => 'administrador.inicio',
+            'administrador' => 'usuarios.index',
         });
     }
 }

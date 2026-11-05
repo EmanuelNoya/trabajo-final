@@ -3,6 +3,7 @@
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RecuperacionContrasenaController;
 use App\Http\Controllers\InicioController;
+use App\Http\Controllers\Administrador\UsuarioController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('guest')->group(function () {
@@ -30,6 +31,11 @@ Route::middleware('auth')->group(function () {
         ->middleware('rol:responsable')->name('responsable.inicio');
     Route::view('/analista', 'inicio', ['titulo' => 'Incorporación de datos'])
         ->middleware('rol:analista')->name('analista.inicio');
-    Route::view('/administrador', 'inicio', ['titulo' => 'Gestión de usuarios'])
-        ->middleware('rol:administrador')->name('administrador.inicio');
+    Route::middleware('rol:administrador')->prefix('administrador')->group(function () {
+        Route::resource('usuarios', UsuarioController::class)->except(['show', 'destroy']);
+        Route::patch('usuarios/{usuario}/desactivar', [UsuarioController::class, 'desactivar'])
+            ->name('usuarios.desactivar');
+        Route::patch('usuarios/{usuario}/activar', [UsuarioController::class, 'activar'])
+            ->name('usuarios.activar');
+    });
 });

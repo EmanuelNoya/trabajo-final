@@ -5,6 +5,8 @@ return [
     'email' => 'El campo :attribute debe ser un correo válido.',
     'string' => 'El campo :attribute debe ser texto.',
     'confirmed' => 'La confirmación de la :attribute no coincide.',
+    'unique' => 'Ya existe un registro con ese :attribute.',
+    'in' => 'El :attribute seleccionado no es válido.',
     'min' => [
         'string' => 'La :attribute debe tener al menos :min caracteres.',
     ],
@@ -23,5 +25,8 @@ return [
         'correo' => 'correo',
         'password' => 'contraseña',
         'password_confirmation' => 'confirmación de la contraseña',
+        'nombre' => 'nombre',
+        'apellido' => 'apellido',
+        'rol' => 'perfil',
     ],
 ];
