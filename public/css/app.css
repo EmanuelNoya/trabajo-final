@@ -69,3 +69,7 @@ input[type=password] {
 .alerta { padding: .75rem 1rem; border-radius: 6px; margin-bottom: 1rem; }
 .alerta.error { background: #fef3f2; color: var(--error); border: 1px solid #fecdca; }
 .alerta.info  { background: #eff8ff; color: #175cd3; border: 1px solid #b2ddff; }
+
+a { color: var(--primario); }
+.ayuda { font-size: .9rem; color: #475467; margin: 0 0 1rem; }
+.pie { margin: 1.25rem 0 0; text-align: center; font-size: .9rem; }

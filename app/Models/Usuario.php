@@ -4,9 +4,12 @@ namespace App\Models;
 
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Notifications\Notifiable;
 
 class Usuario extends Authenticatable
 {
+    use Notifiable;
+
     protected $table = 'usuario';
 
     protected $fillable = [
@@ -48,6 +51,16 @@ class Usuario extends Authenticatable
             'analista' => 'Analista de datos',
             'administrador' => 'Administrador',
         };
+    }
+
+    public function getEmailForPasswordReset(): string
+    {
+        return $this->correo;
+    }
+
+    public function routeNotificationForMail(): string
+    {
+        return $this->correo;
     }
 
 }

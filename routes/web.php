@@ -1,12 +1,23 @@
 <?php
 
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\Auth\RecuperacionContrasenaController;
 use App\Http\Controllers\InicioController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('guest')->group(function () {
     Route::get('/login', [LoginController::class, 'create'])->name('login');
     Route::post('/login', [LoginController::class, 'store']);
+
+    // Recuperación de contraseña
+    Route::get('/recuperar-contrasena', [RecuperacionContrasenaController::class, 'solicitar'])
+        ->name('password.request');
+    Route::post('/recuperar-contrasena', [RecuperacionContrasenaController::class, 'enviarEnlace'])
+        ->middleware('throttle:5,1')->name('password.email');
+    Route::get('/restablecer-contrasena/{token}', [RecuperacionContrasenaController::class, 'formulario'])
+        ->name('password.reset');
+    Route::post('/restablecer-contrasena', [RecuperacionContrasenaController::class, 'restablecer'])
+        ->name('password.store');
 });
 
 Route::middleware('auth')->group(function () {
