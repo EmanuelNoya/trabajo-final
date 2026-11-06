@@ -40,4 +40,9 @@ class Inscripcion extends Model
     {
         return $this->hasMany(ActividadSemanal::class);
     }
+
+    public function entregas(): HasMany
+    {
+        return $this->hasMany(Entrega::class);
+    }
 }

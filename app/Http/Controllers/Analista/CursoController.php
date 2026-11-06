@@ -7,6 +7,7 @@ use App\Models\Carrera;
 use App\Models\Curso;
 use App\Models\Usuario;
 use App\Models\ActividadSemanal;
+use App\Models\Evaluacion;
 use App\Servicios\ArchivoInvalido;
 use App\Servicios\ImportadorNomina;
 use Illuminate\Http\RedirectResponse;
@@ -75,8 +76,18 @@ class CursoController extends Controller
             ->distinct()
             ->orderBy('semana')
             ->pluck('semana');
+        
+        $evaluaciones = Evaluacion::vigentesDelCurso($curso)
+            ->withCount([
+                'entregas as en_plazo' => fn ($q) => $q->whereColumn('entrega.fecha_entrega', '<=', 'evaluacion.fecha_vencimiento'),
+                'entregas as fuera_de_plazo' => fn ($q) => $q->whereColumn('entrega.fecha_entrega', '>', 'evaluacion.fecha_vencimiento'),
+                'entregas as no_presentadas' => fn ($q) => $q->whereNull('entrega.fecha_entrega'),
+            ])
+            ->withAvg('entregas as promedio', 'calificacion')
+            ->orderBy('fecha_vencimiento')
+            ->get();
 
-        return view('analista.cursos.show', compact('curso', 'inscripciones', 'semanasActividad'));
+        return view('analista.cursos.show', compact('curso', 'inscripciones', 'semanasActividad', 'evaluaciones'));
     }
 
     public function incorporarNomina(Request $request, Curso $curso, ImportadorNomina $importador): RedirectResponse

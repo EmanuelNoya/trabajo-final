@@ -1,0 +1,17 @@
+legajo;evaluacion;tipo;fecha_vencimiento;fecha_entrega;calificacion
+VINF00001;TP1;Trabajo práctico;2026-03-29;2026-03-27;8
+VINF00002;TP1;Trabajo práctico;2026-03-29;2026-03-31;6,5
+VINF00003;TP1;Trabajo práctico;2026-03-29;;
+VINF00004;TP1;Trabajo práctico;2026-03-29;2026-03-29;9
+VINF00001;Foro 1;Foro;2026-04-05;2026-04-02;10
+VINF00002;Foro 1;Foro;2026-04-05;;
+VINF00003;Foro 1;Foro;2026-04-05;;
+VINF00004;Foro 1;Foro;2026-04-05;2026-04-05;7
+VINF00001;Parcial 1;Examen parcial;2026-04-19;2026-04-19;7
+VINF00002;Parcial 1;Examen parcial;2026-04-19;2026-04-19;4
+VINF00003;Parcial 1;Examen parcial;2026-04-19;;
+VINF00004;Parcial 1;Examen parcial;19/04/2026;19/04/2026;8,75
+VINF00001;TP2;Trabajo práctico;2026-04-12;2026-04-10;9
+VINF00002;TP2;Trabajo práctico;2026-04-12;;
+VINF00003;TP2;Trabajo práctico;2026-04-12;;
+VINF00004;TP2;Trabajo práctico;2026-04-12;2026-04-13;6

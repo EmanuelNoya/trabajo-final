@@ -5,7 +5,7 @@ use App\Http\Controllers\Auth\RecuperacionContrasenaController;
 use App\Http\Controllers\InicioController;
 use App\Http\Controllers\Administrador\UsuarioController;
 use App\Http\Controllers\Analista\CursoController;
-use App\Http\Controllers\Analista\ActividadController;
+use App\Http\Controllers\Analista\IncorporacionController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('guest')->group(function () {
@@ -34,17 +34,19 @@ Route::middleware('auth')->group(function () {
         ->middleware('rol:responsable')->name('responsable.inicio');
 
     Route::middleware('rol:analista')->prefix('analista')->group(function () {
+        $tipos = implode('|', array_keys(IncorporacionController::IMPORTADORES)); // actividad|calificaciones
+
         Route::resource('cursos', CursoController::class)->only(['index', 'create', 'store', 'show']);
         Route::post('cursos/{curso}/nomina', [CursoController::class, 'incorporarNomina'])
             ->name('cursos.nomina');
-        Route::post('cursos/{curso}/actividad', [ActividadController::class, 'incorporar'])
-            ->name('cursos.actividad');
-        Route::get('cursos/{curso}/actividad/confirmar', [ActividadController::class, 'confirmar'])
-            ->name('cursos.actividad.confirmar');
-        Route::post('cursos/{curso}/actividad/confirmar', [ActividadController::class, 'reemplazar'])
-            ->name('cursos.actividad.reemplazar');
-        Route::delete('cursos/{curso}/actividad/confirmar', [ActividadController::class, 'cancelar'])
-            ->name('cursos.actividad.cancelar');
+        Route::post('cursos/{curso}/incorporar/{tipo}', [IncorporacionController::class, 'incorporar'])
+            ->where('tipo', $tipos)->name('cursos.incorporar');
+        Route::get('cursos/{curso}/incorporar/{tipo}/confirmar', [IncorporacionController::class, 'confirmar'])
+            ->where('tipo', $tipos)->name('cursos.incorporar.confirmar');
+        Route::post('cursos/{curso}/incorporar/{tipo}/confirmar', [IncorporacionController::class, 'reemplazar'])
+            ->where('tipo', $tipos)->name('cursos.incorporar.reemplazar');
+        Route::delete('cursos/{curso}/incorporar/{tipo}/confirmar', [IncorporacionController::class, 'cancelar'])
+            ->where('tipo', $tipos)->name('cursos.incorporar.cancelar');
     });
 
     Route::middleware('rol:administrador')->prefix('administrador')->group(function () {

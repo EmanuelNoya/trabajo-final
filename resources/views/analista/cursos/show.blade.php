@@ -51,13 +51,67 @@
             @endif
         </p>
 
-        <form method="POST" action="{{ route('cursos.actividad', $curso) }}" enctype="multipart/form-data">
+        <form method="POST" action="{{ route('cursos.incorporar', [$curso, 'actividad']) }}" enctype="multipart/form-data">
             @csrf
             <input type="file" name="archivo" accept=".csv" required>
             <button type="submit" class="boton">Incorporar</button>
         </form>
     @endif
 </div>
+
+<div class="tarjeta seccion">
+    <h2>Incorporar calificaciones y entregas</h2>
+
+    @if ($inscripciones->isEmpty())
+        <p class="ayuda">Primero incorporá la nómina del curso.</p>
+    @else
+        <p class="ayuda">
+            Archivo CSV con las columnas
+            <strong>legajo, evaluacion, tipo, fecha_vencimiento, fecha_entrega, calificacion</strong>,
+            con una fila por estudiante y evaluación. Si la fecha de entrega está vacía, la evaluación cuenta
+            como no presentada. Calificación de 1 a 10.
+        </p>
+
+        <form method="POST" action="{{ route('cursos.incorporar', [$curso, 'calificaciones']) }}" enctype="multipart/form-data">
+            @csrf
+            <input type="file" name="archivo" accept=".csv" required>
+            <button type="submit" class="boton">Incorporar</button>
+        </form>
+    @endif
+</div>
+
+@if ($evaluaciones->isNotEmpty())
+    <div class="tarjeta sin-relleno seccion">
+        <h2 class="titulo-tabla">Evaluaciones</h2>
+        <table class="tabla">
+            <thead>
+                <tr>
+                    <th>Evaluación</th>
+                    <th>Vencimiento</th>
+                    <th>En plazo</th>
+                    <th>Fuera de plazo</th>
+                    <th>No presentadas</th>
+                    <th>Promedio</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach ($evaluaciones as $evaluacion)
+                    <tr>
+                        <td>
+                            {{ $evaluacion->denominacion }}
+                            <div class="detalle">{{ $evaluacion->tipoLegible() }}</div>
+                        </td>
+                        <td>{{ $evaluacion->fecha_vencimiento->format('d/m/Y') }}</td>
+                        <td>{{ $evaluacion->en_plazo }}</td>
+                        <td>{{ $evaluacion->fuera_de_plazo }}</td>
+                        <td>{{ $evaluacion->no_presentadas }}</td>
+                        <td>{{ $evaluacion->promedio !== null ? number_format($evaluacion->promedio, 2, ',', '.') : '—' }}</td>
+                    </tr>
+                @endforeach
+            </tbody>
+        </table>
+    </div>
+@endif
 
 @if (session('rechazadas'))
     <div class="tarjeta sin-relleno seccion">

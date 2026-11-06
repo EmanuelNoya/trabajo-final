@@ -7,9 +7,7 @@ use App\Models\Curso;
 use App\Models\Estudiante;
 use App\Models\Inscripcion;
 use App\Models\Usuario;
-use DateTimeImmutable;
 use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
 class ImportadorNomina
@@ -130,7 +128,7 @@ class ImportadorNomina
 
         $fechaBaja = null;
         if ($textoBaja !== '') {
-            $fechaBaja = $this->leerFecha($textoBaja);
+            $fechaBaja = $this->lector->leerFecha($textoBaja);
 
             if ($fechaBaja === null) {
                 return [null, 'La fecha de baja no es válida (usar AAAA-MM-DD o DD/MM/AAAA).'];
@@ -149,18 +147,4 @@ class ImportadorNomina
         ], null];
     }
 
-    private function leerFecha(string $texto): ?Carbon
-    {
-        foreach (['!Y-m-d', '!d/m/Y'] as $formato) {
-            $fecha = DateTimeImmutable::createFromFormat($formato, $texto);
-            $errores = DateTimeImmutable::getLastErrors();
-
-            // getLastErrors() detecta fechas imposibles como 31/02, que PHP "corregiría" sin avisar
-            if ($fecha !== false && ($errores === false || $errores['warning_count'] + $errores['error_count'] === 0)) {
-                return Carbon::instance($fecha);
-            }
-        }
-
-        return null;
-    }
 }

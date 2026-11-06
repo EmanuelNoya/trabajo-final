@@ -5,38 +5,33 @@ namespace App\Servicios;
 use App\Models\ActividadSemanal;
 use App\Models\CargaArchivo;
 use App\Models\Curso;
-use App\Models\Inscripcion;
-use App\Models\Usuario;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
 
-class ImportadorActividad
+class ImportadorActividad extends ImportadorBase
 {
-    public const COLUMNAS_REQUERIDAS = ['legajo', 'semana', 'con_actividad'];
-
     private const VALORES_SI = ['1', 'si', 'sí', 's', 'true', 'verdadero', 'x'];
     private const VALORES_NO = ['0', 'no', 'n', 'false', 'falso'];
 
-    public function __construct(private LectorCsv $lector)
+    public function tipo(): string
     {
+        return 'actividad';
+    }
+
+    public function descripcion(): string
+    {
+        return 'actividad semanal';
+    }
+
+    public function unidad(): string
+    {
+        return 'semanas';
     }
 
     public function analizar(string $ruta, Curso $curso): array
     {
-        $datos = $this->lector->leer(Storage::path($ruta));
-        $this->lector->exigirColumnas($datos['encabezados'], self::COLUMNAS_REQUERIDAS); // criterio 3
-
-        if ($datos['filas'] === []) {
-            throw new ArchivoInvalido('El archivo no tiene filas de actividad.');
-        }
-
-        // legajo => id de la inscripción, solo para los estudiantes de la nómina del curso
-        $nomina = Inscripcion::where('curso_id', $curso->id)
-            ->with('estudiante:id,legajo')
-            ->get()
-            ->mapWithKeys(fn ($i) => [mb_strtoupper($i->estudiante->legajo) => $i->id]);
-
+        $datos = $this->leer($ruta, ['legajo', 'semana', 'con_actividad']);
+        $nomina = $this->nomina($curso);
         $totalSemanas = $curso->cantidadSemanas();
+
         $validas = [];
         $rechazadas = [];
         $vistas = []; // "legajo|semana" => número de fila
@@ -71,54 +66,26 @@ class ImportadorActividad
             ];
         }
 
-        $semanasArchivo = collect($validas)->pluck('semana')->unique()->sort()->values();
+        $semanas = collect($validas)->pluck('semana')->unique()->sort()->values();
 
-        // Semanas que ya tienen datos en cargas vigentes del curso
         $vigentes = ActividadSemanal::vigentesDelCurso($curso)
             ->distinct()
-            ->get(['carga_id', 'semana']);
-
-        $cargasAReemplazar = $vigentes->whereIn('semana', $semanasArchivo)->pluck('carga_id')->unique()->values();
-        $semanasQueQuedan = $vigentes->whereNotIn('carga_id', $cargasAReemplazar)->pluck('semana');
+            ->get(['carga_id', 'semana'])
+            ->map(fn ($r) => ['carga_id' => $r->carga_id, 'unidad' => $r->semana]);
 
         return [
             'validas' => $validas,
             'rechazadas' => $rechazadas,
-            'semanas' => $semanasArchivo->all(),
-            'semanas_existentes' => $vigentes->whereIn('semana', $semanasArchivo)
-                ->pluck('semana')->unique()->sort()->values()->all(),
-            // Semanas que solo estaban en las cargas reemplazadas y que el archivo nuevo no trae
-            'semanas_sin_datos' => $vigentes->whereIn('carga_id', $cargasAReemplazar)->pluck('semana')
-                ->diff($semanasArchivo)->diff($semanasQueQuedan)->unique()->sort()->values()->all(),
-            'cargas_a_reemplazar' => $cargasAReemplazar->all(),
-        ];
+            'unidades' => $semanas->all(),
+        ] + $this->compararConVigentes($vigentes, $semanas);
     }
 
-    public function incorporar(array $analisis, string $ruta, string $nombreOriginal, Curso $curso, Usuario $analista): CargaArchivo
+    protected function guardarRegistros(array $analisis, CargaArchivo $carga): void
     {
-        return DB::transaction(function () use ($analisis, $ruta, $nombreOriginal, $curso, $analista) {
+        $filas = array_map(fn ($f) => $f + ['carga_id' => $carga->id], $analisis['validas']);
 
-            CargaArchivo::whereIn('id', $analisis['cargas_a_reemplazar'])->update(['estado' => 'reemplazada']);
-
-            $carga = CargaArchivo::create([ // criterio 5
-                'curso_id' => $curso->id,
-                'usuario_id' => $analista->id,
-                'tipo_archivo' => 'actividad',
-                'nombre_archivo' => mb_substr($nombreOriginal, 0, 255),
-                'hash_archivo' => hash_file('sha256', Storage::path($ruta)),
-                'filas_validas' => count($analisis['validas']),
-                'filas_rechazadas' => count($analisis['rechazadas']),
-            ]);
-
-            $filas = array_map(fn ($f) => $f + ['carga_id' => $carga->id], $analisis['validas']);
-
-            foreach (array_chunk($filas, 500) as $bloque) {
-                ActividadSemanal::insert($bloque); // una sola consulta por bloque de 500 filas
-            }
-
-            Storage::move($ruta, "cargas/{$carga->id}_actividad.csv");
-
-            return $carga;
-        });
+        foreach (array_chunk($filas, 500) as $bloque) {
+            ActividadSemanal::insert($bloque); // una sola consulta por bloque de 500 filas
+        }
     }
 }
