@@ -8,6 +8,7 @@ use App\Servicios\ArchivoInvalido;
 use App\Servicios\ImportadorActividad;
 use App\Servicios\ImportadorBase;
 use App\Servicios\ImportadorCalificaciones;
+use App\Servicios\ImportadorForos;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -23,6 +24,7 @@ class IncorporacionController extends Controller
     public const IMPORTADORES = [
         'actividad' => ImportadorActividad::class,
         'calificaciones' => ImportadorCalificaciones::class,
+        'foros' => ImportadorForos::class,
     ];
 
     public function incorporar(Request $request, Curso $curso, string $tipo): RedirectResponse
@@ -105,8 +107,15 @@ class IncorporacionController extends Controller
     {
         $carga = $importador->incorporar($analisis, $ruta, $nombre, $curso, $request->user());
 
+        $mensaje = 'Archivo de ' . $importador->descripcion()
+            . " incorporado: {$carga->filas_validas} filas válidas y {$carga->filas_rechazadas} rechazadas.";
+
+        if (! empty($analisis['aviso'])) {
+            $mensaje .= ' ' . $analisis['aviso'];
+        }
+
         return redirect()->route('cursos.show', $curso)
-            ->with('estado', 'Archivo de ' . $importador->descripcion() . " incorporado: {$carga->filas_validas} filas válidas y {$carga->filas_rechazadas} rechazadas.")
+            ->with('estado', $mensaje)
             ->with('rechazadas', $analisis['rechazadas']);
     }
 
