@@ -1,6 +1,8 @@
 <?php
 
 namespace App\Servicios;
+use DateTimeImmutable;
+use Illuminate\Support\Carbon;
 
 /**
  * Lectura de los archivos CSV del sistema. Se reutiliza en todas las incorporaciones.
@@ -74,5 +76,23 @@ class LectorCsv
         if (count($faltantes) > 1) {
             throw new ArchivoInvalido('Faltan las columnas obligatorias: ' . implode(', ', $faltantes) . '.');
         }
+    }
+
+    /**
+     * Lee una fecha en formato AAAA-MM-DD o DD/MM/AAAA. Devuelve null si no es válida.
+     */
+    public function leerFecha(string $texto): ?Carbon
+    {
+        foreach (['!Y-m-d', '!d/m/Y'] as $formato) {
+            $fecha = DateTimeImmutable::createFromFormat($formato, $texto);
+            $errores = DateTimeImmutable::getLastErrors();
+
+            // getLastErrors() detecta fechas imposibles como 31/02, que PHP "corregiría" sin avisar
+            if ($fecha !== false && ($errores === false || $errores['warning_count'] + $errores['error_count'] === 0)) {
+                return Carbon::instance($fecha);
+            }
+        }
+
+        return null;
     }
 }
