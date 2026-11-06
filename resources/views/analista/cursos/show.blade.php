@@ -80,6 +80,29 @@
     @endif
 </div>
 
+<div class="tarjeta seccion">
+    <h2>Incorporar participación en foros</h2>
+
+    @if ($inscripciones->isEmpty())
+        <p class="ayuda">Primero incorporá la nómina del curso.</p>
+    @else
+        <p class="ayuda">
+            Archivo CSV con las columnas <strong>legajo, semana, intervenciones</strong>
+            (número entero, cero o mayor), con una fila por estudiante y semana. Si un estudiante
+            de la nómina no figura en una semana del archivo, se le registran cero intervenciones.
+            @if ($semanasForos->isNotEmpty())
+                Semanas ya incorporadas: <strong>{{ $semanasForos->implode(', ') }}</strong>.
+            @endif
+        </p>
+
+        <form method="POST" action="{{ route('cursos.incorporar', [$curso, 'foros']) }}" enctype="multipart/form-data">
+            @csrf
+            <input type="file" name="archivo" accept=".csv" required>
+            <button type="submit" class="boton">Incorporar</button>
+        </form>
+    @endif
+</div>
+
 @if ($evaluaciones->isNotEmpty())
     <div class="tarjeta sin-relleno seccion">
         <h2 class="titulo-tabla">Evaluaciones</h2>
@@ -137,7 +160,7 @@
     <h2 class="titulo-tabla">Estudiantes inscriptos ({{ $inscripciones->count() }})</h2>
     <table class="tabla">
         <thead>
-            <tr><th>Legajo</th><th>Apellido y nombre</th><th>Documento</th><th>Estado</th></tr>
+            <tr><th>Legajo</th><th>Apellido y nombre</th><th>Documento</th><th>Semanas con actividad</th><th>Intervenciones en foros</th><th>Estado</th></tr>
         </thead>
         <tbody>
             @forelse ($inscripciones as $inscripcion)
@@ -145,6 +168,8 @@
                     <td>{{ $inscripcion->estudiante->legajo }}</td>
                     <td>{{ $inscripcion->estudiante->apellido }}, {{ $inscripcion->estudiante->nombre }}</td>
                     <td>{{ $inscripcion->estudiante->documento }}</td>
+                    <td>{{ $semanasActivas[$inscripcion->id] ?? 0 }} de {{ $semanasActividad->count() }}</td>
+                    <td>{{ $intervenciones[$inscripcion->id] ?? '—' }}</td>
                     <td>
                         @if ($inscripcion->fecha_baja)
                             <span class="etiqueta inactiva">Baja {{ $inscripcion->fecha_baja->format('d/m/Y') }}</span>
@@ -154,7 +179,7 @@
                     </td>
                 </tr>
             @empty
-                <tr><td colspan="4">Sin estudiantes: incorporá la nómina.</td></tr>
+                <tr><td colspan="8">Sin estudiantes: incorporá la nómina.</td></tr>
             @endforelse
         </tbody>
     </table>

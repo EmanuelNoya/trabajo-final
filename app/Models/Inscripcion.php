@@ -45,4 +45,9 @@ class Inscripcion extends Model
     {
         return $this->hasMany(Entrega::class);
     }
+
+    public function participaciones(): HasMany
+    {
+        return $this->hasMany(ParticipacionForo::class);
+    }
 }

@@ -8,6 +8,7 @@ use App\Models\Curso;
 use App\Models\Usuario;
 use App\Models\ActividadSemanal;
 use App\Models\Evaluacion;
+use App\Models\ParticipacionForo;
 use App\Servicios\ArchivoInvalido;
 use App\Servicios\ImportadorNomina;
 use Illuminate\Http\RedirectResponse;
@@ -86,8 +87,25 @@ class CursoController extends Controller
             ->withAvg('entregas as promedio', 'calificacion')
             ->orderBy('fecha_vencimiento')
             ->get();
+        
+        $semanasForos = ParticipacionForo::vigentesDelCurso($curso)
+            ->distinct()
+            ->orderBy('semana')
+            ->pluck('semana');
 
-        return view('analista.cursos.show', compact('curso', 'inscripciones', 'semanasActividad', 'evaluaciones'));
+        // Totales por inscripción, para la tabla de estudiantes
+        $semanasActivas = ActividadSemanal::vigentesDelCurso($curso)
+            ->where('con_actividad', true)
+            ->selectRaw('inscripcion_id, COUNT(*) AS total')
+            ->groupBy('inscripcion_id')
+            ->pluck('total', 'inscripcion_id');
+
+        $intervenciones = ParticipacionForo::vigentesDelCurso($curso)
+            ->selectRaw('inscripcion_id, SUM(intervenciones) AS total')
+            ->groupBy('inscripcion_id')
+            ->pluck('total', 'inscripcion_id');
+
+        return view('analista.cursos.show', compact('curso', 'inscripciones', 'semanasActividad', 'evaluaciones', 'semanasForos', 'semanasActivas', 'intervenciones'));
     }
 
     public function incorporarNomina(Request $request, Curso $curso, ImportadorNomina $importador): RedirectResponse
