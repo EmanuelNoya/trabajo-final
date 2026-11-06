@@ -36,6 +36,29 @@
     </form>
 </div>
 
+<div class="tarjeta seccion">
+    <h2>Incorporar actividad semanal</h2>
+
+    @if ($inscripciones->isEmpty())
+        <p class="ayuda">Primero incorporá la nómina del curso.</p>
+    @else
+        <p class="ayuda">
+            Archivo CSV con las columnas <strong>legajo, semana, con_actividad</strong>
+            (1 o 0; también sí o no), con una fila por estudiante y semana.
+            El curso tiene {{ $curso->cantidadSemanas() }} semanas.
+            @if ($semanasActividad->isNotEmpty())
+                Semanas ya incorporadas: <strong>{{ $semanasActividad->implode(', ') }}</strong>.
+            @endif
+        </p>
+
+        <form method="POST" action="{{ route('cursos.actividad', $curso) }}" enctype="multipart/form-data">
+            @csrf
+            <input type="file" name="archivo" accept=".csv" required>
+            <button type="submit" class="boton">Incorporar</button>
+        </form>
+    @endif
+</div>
+
 @if (session('rechazadas'))
     <div class="tarjeta sin-relleno seccion">
         <h2 class="titulo-tabla">Filas rechazadas</h2>

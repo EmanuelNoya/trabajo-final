@@ -108,3 +108,7 @@ h2 { font-size: 1.15rem; margin: 0 0 .75rem; }
 .datos dt { font-weight: 600; color: #475467; }
 .datos dd { margin: 0; }
 .codigo { font-family: ui-monospace, Consolas, monospace; }
+
+.alerta.aviso { background: #fffaeb; color: #93370d; border: 1px solid #fedf89; }
+.botones { display: flex; gap: .75rem; margin-top: 1.5rem; }
+.boton.claro { background: #fff; color: var(--texto); border: 1px solid var(--borde); }

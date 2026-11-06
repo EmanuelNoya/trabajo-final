@@ -60,4 +60,9 @@ class Curso extends Model
             ->where('tipo_archivo', 'nomina')
             ->where('estado', 'vigente');
     }
+    
+    public function cantidadSemanas(): int
+    {
+        return (int) ceil(($this->fecha_inicio->diffInDays($this->fecha_fin) + 1) / 7);
+    }
 }

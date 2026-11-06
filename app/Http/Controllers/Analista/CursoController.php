@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Carrera;
 use App\Models\Curso;
 use App\Models\Usuario;
+use App\Models\ActividadSemanal;
 use App\Servicios\ArchivoInvalido;
 use App\Servicios\ImportadorNomina;
 use Illuminate\Http\RedirectResponse;
@@ -70,7 +71,12 @@ class CursoController extends Controller
             ->get()
             ->sortBy(fn ($i) => $i->estudiante->apellido . ' ' . $i->estudiante->nombre);
 
-        return view('analista.cursos.show', compact('curso', 'inscripciones'));
+        $semanasActividad = ActividadSemanal::vigentesDelCurso($curso)
+            ->distinct()
+            ->orderBy('semana')
+            ->pluck('semana');
+
+        return view('analista.cursos.show', compact('curso', 'inscripciones', 'semanasActividad'));
     }
 
     public function incorporarNomina(Request $request, Curso $curso, ImportadorNomina $importador): RedirectResponse
