@@ -4,20 +4,16 @@
 
 @section('contenido')
 <div class="tarjeta login">
-    <h1>Iniciar sesión</h1>
+    <p class="sobretitulo">{{ config('app.institucion') }}</p>
+    <h1 class="titulo-sistema">{{ config('app.name') }}</h1>
+    <p class="subtitulo">Ingresá con tu cuenta institucional</p>
 
-    @if (session('estado'))
-        <div class="alerta info">{{ session('estado') }}</div>
-    @endif
-
-    @if ($errors->any())
-        <div class="alerta error">{{ $errors->first() }}</div>
-    @endif
+    @include('partials.mensajes')
 
     <form method="POST" action="{{ route('login') }}">
         @csrf
 
-        <label for="correo">Correo institucional</label>
+        <label for="correo">Correo electrónico</label>
         <input type="email" id="correo" name="correo" value="{{ old('correo') }}"
                required autofocus autocomplete="username">
 
@@ -27,6 +23,8 @@
 
         <button type="submit" class="boton ancho">Ingresar</button>
     </form>
+
     <p class="pie"><a href="{{ route('password.request') }}">¿Olvidaste tu contraseña?</a></p>
+    <p class="nota">El acceso a la información de cada estudiante depende del perfil asignado al usuario.</p>
 </div>
 @endsection

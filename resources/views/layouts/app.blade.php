@@ -6,43 +6,63 @@
     <title>@yield('titulo') · {{ config('app.name') }}</title>
     <link rel="stylesheet" href="{{ asset('css/app.css') }}">
 </head>
-<body>
+<body class="{{ auth()->check() ? '' : 'acceso' }}">
     @auth
-        <header class="barra">
-            <div class="marca">
-                <strong>{{ config('app.name') }}</strong>
-                <nav class="menu">
-                    @switch(auth()->user()->rol)
-                        @case('docente')
-                            <a href="{{ route('tablero.index') }}">Mis cursos</a>
-                            @break
-                        @case('responsable')
-                            <a href="{{ route('carrera.estado') }}">Cursos de la carrera</a>
-                            <a href="{{ route('umbrales.index') }}">Umbrales</a>
-                            <a href="{{ route('modelo.vigente') }}">Modelo</a>
-                            @break
-                        @case('analista')
-                            <a href="{{ route('cursos.index') }}">Cursos</a>
-                            @break
-                        @case('administrador')
-                            <a href="{{ route('usuarios.index') }}">Usuarios</a>
-                            @break
-                    @endswitch
-                </nav>
-            </div>
-            <div>
-                {{ auth()->user()->nombre }} {{ auth()->user()->apellido }} · {{ auth()->user()->rolLegible() }}
+        @php
+            $yo = auth()->user();
+            // Las vistas de un curso reciben la variable $curso: con ella se arman las opciones del curso
+            $cursoActual = isset($curso) && $curso instanceof App\Models\Curso ? $curso : null;
+
+            $enlaces = match ($yo->rol) {
+                'docente' => array_filter([
+                    ['Mis cursos', route('tablero.index'), request()->routeIs('tablero.index')],
+                    $cursoActual ? ['Tablero del curso', route('tablero.show', $cursoActual), request()->routeIs('tablero.show', 'tablero.estudiante')] : null,
+                ]),
+                'responsable' => array_filter([
+                    ['Cursos de la carrera', route('carrera.estado'), request()->routeIs('carrera.estado')],
+                    $cursoActual ? ['Tablero del curso', route('tablero.show', $cursoActual), request()->routeIs('tablero.show', 'tablero.estudiante')] : null,
+                    ['Umbrales de riesgo', route('umbrales.index'), request()->routeIs('umbrales.*')],
+                    ['Importancia de indicadores', route('modelo.vigente'), request()->routeIs('modelo.vigente')],
+                ]),
+                'analista' => array_filter([
+                    ['Cursos', route('cursos.index'), request()->routeIs('cursos.index', 'cursos.create')],
+                    $cursoActual ? ['Incorporar datos', route('cursos.show', $cursoActual), request()->routeIs('cursos.show', 'cursos.incorporar.*')] : null,
+                    $cursoActual ? ['Indicadores y estimación', route('cursos.indicadores', $cursoActual), request()->routeIs('cursos.indicadores')] : null,
+                ]),
+                'administrador' => [
+                    ['Usuarios', route('usuarios.index'), request()->routeIs('usuarios.*')],
+                ],
+                default => [],
+            };
+        @endphp
+
+        <header class="cabecera">
+            <span class="sistema">{{ config('app.name') }}</span>
+            <div class="usuario">
+                <span>{{ $yo->apellido }}, {{ $yo->nombre }} · {{ $yo->rolLegible() }}</span>
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf
-                    <button type="submit" class="boton secundario">Cerrar sesión</button>
+                    <button type="submit" class="salir">Cerrar sesión</button>
                 </form>
             </div>
         </header>
-    @endauth
 
-    <main class="contenido">
-        @yield('contenido')
-    </main>
+        <div class="aplicacion">
+            <nav class="lateral" aria-label="Menú principal">
+                @foreach ($enlaces as [$texto, $url, $activo])
+                    <a href="{{ $url }}" class="{{ $activo ? 'activo' : '' }}" @if ($activo) aria-current="page" @endif>{{ $texto }}</a>
+                @endforeach
+            </nav>
+
+            <main class="contenido">
+                @yield('contenido')
+            </main>
+        </div>
+    @else
+        <main>
+            @yield('contenido')
+        </main>
+    @endauth
 
     @stack('scripts')
 </body>
