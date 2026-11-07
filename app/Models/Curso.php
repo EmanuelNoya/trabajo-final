@@ -65,4 +65,9 @@ class Curso extends Model
     {
         return (int) ceil(($this->fecha_inicio->diffInDays($this->fecha_fin) + 1) / 7);
     }
+
+    public function ejecuciones(): HasMany
+    {
+        return $this->hasMany(EjecucionEstimacion::class);
+    }
 }

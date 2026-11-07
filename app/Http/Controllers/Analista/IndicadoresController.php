@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Analista;
 
 use App\Http\Controllers\Controller;
 use App\Models\Curso;
+use App\Models\Modelo;
 use App\Servicios\CalculadoraIndicadores;
 use Illuminate\View\View;
 
@@ -18,8 +19,13 @@ class IndicadoresController extends Controller
             'corte' => $calculadora->fechaCorte($curso),
             'semanas' => $calculadora->semanasHastaCorte($curso),
             'problemas' => $problemas,
-            //si falta algo, no se calcula
             'resultado' => $problemas === [] ? $calculadora->calcular($curso) : null,
+            'modelo' => Modelo::where('vigente', true)->first(),
+            'ejecuciones' => $curso->ejecuciones()
+                ->with(['modelo', 'usuario'])
+                ->withCount(['estimaciones', 'cargas'])
+                ->latest()
+                ->get(),
         ]);
     }
 }

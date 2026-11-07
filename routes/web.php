@@ -7,6 +7,7 @@ use App\Http\Controllers\Administrador\UsuarioController;
 use App\Http\Controllers\Analista\CursoController;
 use App\Http\Controllers\Analista\IncorporacionController;
 use App\Http\Controllers\Analista\IndicadoresController;
+use App\Http\Controllers\Analista\EstimacionController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('guest')->group(function () {
@@ -50,6 +51,8 @@ Route::middleware('auth')->group(function () {
             ->where('tipo', $tipos)->name('cursos.incorporar.cancelar');
         Route::get('cursos/{curso}/indicadores', IndicadoresController::class)
             ->name('cursos.indicadores');
+        Route::post('cursos/{curso}/estimaciones', [EstimacionController::class, 'store'])
+            ->name('cursos.estimaciones.store');
     });
 
     Route::middleware('rol:administrador')->prefix('administrador')->group(function () {

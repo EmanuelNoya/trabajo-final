@@ -8,6 +8,7 @@ use App\Models\Curso;
 use App\Models\Estudiante;
 use App\Models\Inscripcion;
 use App\Models\Usuario;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
@@ -68,6 +69,12 @@ class DatabaseSeeder extends Seeder
             'curso_id' => $curso->id,
             'estudiante_id' => $estudiante->id,
             'carga_id' => $carga->id,
+        ]);
+
+        // Modelo de riesgo vigente (el JSON no trae la fecha de entrenamiento)
+        Artisan::call('modelo:registrar', [
+            'ruta' => 'resources/modelos/modelo_rl_v1.json',
+            '--fecha' => '2026-10-19',
         ]);
     }
 }

@@ -13,6 +13,8 @@
     <h1>Indicadores al momento de corte</h1>
 </div>
 
+@include('partials.mensajes')
+
 <div class="tarjeta">
     <dl class="datos">
         <dt>Período del curso</dt>
@@ -78,8 +80,59 @@
     </div>
 
     <p class="ayuda seccion">
-        Todos los indicadores van de 0 a 1. Se calculan con los registros hasta la fecha de corte inclusive,
-        con las mismas definiciones que se usaron para entrenar el modelo.
+    Todos los indicadores van de 0 a 1. Se calculan con los registros hasta la fecha de corte inclusive,
+    con las mismas definiciones que se usaron para entrenar el modelo.
     </p>
+
+    <div class="tarjeta seccion">
+        <h2>Estimación del riesgo</h2>
+        @if ($modelo)
+            <p class="ayuda">
+                Modelo vigente: <strong>{{ $modelo->version }}</strong> ({{ $modelo->algoritmo }}),
+                entrenado el {{ $modelo->fecha_entrenamiento->format('d/m/Y') }}.
+                Cada ejecución queda registrada; las anteriores se conservan.
+            </p>
+            <form method="POST" action="{{ route('cursos.estimaciones.store', $curso) }}">
+                @csrf
+                <button type="submit" class="boton">Ejecutar estimación</button>
+            </form>
+        @else
+            <p class="ayuda">No hay ningún modelo vigente registrado. Registralo con <code>php artisan modelo:registrar</code>.</p>
+        @endif
+    </div>
+@endif
+@if ($ejecuciones->isNotEmpty())
+    <div class="tarjeta sin-relleno seccion">
+        <h2 class="titulo-tabla">Estimaciones realizadas</h2>
+        <table class="tabla">
+            <thead>
+                <tr>
+                    <th>Fecha y hora</th>
+                    <th>Fecha de corte</th>
+                    <th>Modelo</th>
+                    <th>Estudiantes</th>
+                    <th>Archivos usados</th>
+                    <th>Ejecutó</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach ($ejecuciones as $ejecucion)
+                    <tr>
+                        <td>
+                            {{ $ejecucion->created_at->format('d/m/Y H:i') }}
+                            @if ($loop->first)
+                                <span class="etiqueta activa">Actual</span>
+                            @endif
+                        </td>
+                        <td>{{ $ejecucion->fecha_corte->format('d/m/Y') }}</td>
+                        <td>{{ $ejecucion->modelo->version }}</td>
+                        <td>{{ $ejecucion->estimaciones_count }}</td>
+                        <td>{{ $ejecucion->cargas_count }}</td>
+                        <td>{{ $ejecucion->usuario->nombre }} {{ $ejecucion->usuario->apellido }}</td>
+                    </tr>
+                @endforeach
+            </tbody>
+        </table>
+    </div>
 @endif
 @endsection
