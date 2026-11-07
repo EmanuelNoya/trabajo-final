@@ -1,0 +1,42 @@
+{
+  "version": "rl-oulad-30-v1",
+  "algoritmo": "Regresión logística con ponderación de categorías",
+  "corte": 0.3,
+  "entrenado_con": "OULAD (Kuzilek et al., 2017), 25.892 registros, 22 presentaciones",
+  "indicadores": [
+    "asistencia",
+    "calificaciones",
+    "entregas",
+    "participacion"
+  ],
+  "media": {
+    "asistencia": 0.7178015673496904,
+    "calificaciones": 0.6985272901266644,
+    "entregas": 0.6601878315052268,
+    "participacion": 0.5004248416499305
+  },
+  "desvio": {
+    "asistencia": 0.27740136429530887,
+    "calificaciones": 0.24816959282799658,
+    "entregas": 0.374766585318429,
+    "participacion": 0.2869029920345576
+  },
+  "coeficientes": {
+    "asistencia": -0.34907962817789384,
+    "calificaciones": -0.9598012959884527,
+    "entregas": -0.4794166034026669,
+    "participacion": -0.23940424929487789
+  },
+  "intercepto": 0.0661393336164517,
+  "formula": "p = 1 / (1 + exp(-(intercepto + sum(coef_i * (x_i - media_i) / desvio_i))))",
+  "metricas_validacion_temporal": {
+    "sensibilidad": 0.6830265848670757,
+    "precision": 0.642410642731207,
+    "f1": 0.6620963079210375,
+    "ap": 0.7543980574371753
+  },
+  "umbrales_sugeridos": {
+    "medio": 0.4,
+    "alto": 0.6
+  }
+}
