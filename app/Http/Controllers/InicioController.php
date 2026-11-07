@@ -10,8 +10,8 @@ class InicioController extends Controller
     public function __invoke(Request $request): RedirectResponse
     {
         return redirect()->route(match ($request->user()->rol) {
-            'docente' => 'docente.inicio',
-            'responsable' => 'responsable.inicio',
+            'docente' => 'tablero.index',
+            'responsable' => 'tablero.index',
             'analista' => 'cursos.index',
             'administrador' => 'usuarios.index',
         });

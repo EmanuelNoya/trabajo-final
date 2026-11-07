@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Builder;
 
 class Curso extends Model
 {
@@ -69,5 +70,23 @@ class Curso extends Model
     public function ejecuciones(): HasMany
     {
         return $this->hasMany(EjecucionEstimacion::class);
+    }
+
+    /** Última ejecución de la estimación: es la que muestra el tablero */
+    public function ejecucionActual(): HasOne
+    {
+        return $this->hasOne(EjecucionEstimacion::class)->latestOfMany();
+    }
+
+    /**
+     * Cursos que puede consultar el usuario: el docente, los suyos; el responsable, los de su carrera.
+     */
+    public function scopeVisiblesPara(Builder $query, Usuario $usuario): void
+    {
+        match ($usuario->rol) {
+            'docente' => $query->where('docente_id', $usuario->id),
+            'responsable' => $query->whereHas('carrera', fn ($q) => $q->where('responsable_id', $usuario->id)),
+            default => $query->whereRaw('1 = 0'),
+        };
     }
 }

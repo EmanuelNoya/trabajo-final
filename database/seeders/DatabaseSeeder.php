@@ -8,6 +8,7 @@ use App\Models\Curso;
 use App\Models\Estudiante;
 use App\Models\Inscripcion;
 use App\Models\Usuario;
+use App\Models\UmbralRiesgo;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
@@ -35,6 +36,14 @@ class DatabaseSeeder extends Seeder
         $carrera = Carrera::create([
             'nombre' => 'Licenciatura en Informática',
             'responsable_id' => $usuarios['responsable']->id,
+        ]);
+
+        UmbralRiesgo::create([
+            'carrera_id' => $carrera->id,
+            'usuario_id' => $usuarios['responsable']->id,
+            'umbral_medio' => UmbralRiesgo::MEDIO_POR_DEFECTO,
+            'umbral_alto' => UmbralRiesgo::ALTO_POR_DEFECTO,
+            'fecha_desde' => '2026-01-01',
         ]);
 
         $curso = Curso::create([
