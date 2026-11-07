@@ -177,25 +177,30 @@ input:focus, select:focus { outline: 2px solid var(--primario); outline-offset: 
 .grafico { position: relative; height: 260px; }
 .pie { margin: 1.25rem 0 0; text-align: center; font-size: .9rem; }
 
-/* ---------- Clases de pantallas que se rediseñan en la parte 2 ---------- */
+/* ---------- Situación individual (Figura 9) e importancia ---------- */
 
-.niveles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
-.nivel { display: flex; flex-direction: column; gap: .25rem; padding: 1rem 1.25rem; background: #fff; border: 1px solid var(--borde-suave); border-left-width: 6px; border-radius: 8px; color: var(--texto); text-decoration: none; }
-.nivel .cantidad { font-size: 2rem; font-weight: 700; line-height: 1; }
-.nivel-alto { border-left-color: #d92d20; }
-.nivel-medio { border-left-color: #f79009; }
-.nivel-bajo { border-left-color: #12b76a; }
-.aportes td { border-bottom: 0; padding: .4rem .5rem; }
-.aportes td:first-child { width: 9rem; font-weight: 600; }
-.barra-celda { width: 60%; }
-.barra { display: block; height: .75rem; border-radius: 999px; }
-.barra.eleva { background: #d92d20; }
-.barra.reduce { background: #12b76a; }
-.distribucion { display: flex; height: .75rem; min-width: 8rem; border-radius: 999px; overflow: hidden; background: #f2f4f7; }
-.distribucion span { display: block; height: 100%; }
-.distribucion .alto { background: #d92d20; }
-.distribucion .medio { background: #f79009; }
-.distribucion .bajo { background: #12b76a; }
+.pista { display: block; }
+.rotulo { color: var(--texto-suave); }
+.ficha { display: grid; grid-template-columns: minmax(15rem, 20rem) 1fr; gap: 1.5rem; }
+.probabilidad-grande { display: block; margin: .25rem 0 .5rem; font-size: 3rem; font-weight: 800; line-height: 1.1; }
+.probabilidad-grande.alto  { color: var(--alto); }
+.probabilidad-grande.medio { color: var(--medio); }
+.probabilidad-grande.bajo  { color: var(--bajo); }
+.tabla-indicadores .barra-indicador { width: 35%; }
+.tabla-indicadores .contribuye { font-weight: 700; }
+.desplegable { margin-top: 1rem; }
+.desplegable summary { cursor: pointer; color: var(--primario); font-weight: 700; }
+.interior { padding: 0 1.5rem 1.25rem; }
+
+/* ---------- Umbrales (Figura 10) ---------- */
+
+.umbral { display: grid; grid-template-columns: 1fr 7rem auto; gap: 1rem; align-items: center; margin-bottom: 1.25rem; }
+.umbral input[type=range] { width: 100%; margin: 0; }
+.umbral input[type=number] { margin: 0; text-align: center; }
+.umbral .actual { white-space: nowrap; font-size: .9rem; color: var(--texto-tenue); }
+input[type=range].medio { accent-color: var(--primario); }
+input[type=range].alto  { accent-color: var(--alto); }
+.campo-fecha { max-width: 14rem; }
 
 /* ---------- Acceso: inicio de sesión y recuperación (Figura 6) ---------- */
 
@@ -216,6 +221,8 @@ body.acceso { display: flex; align-items: center; justify-content: center; min-h
     .lateral a { white-space: nowrap; border-left: 0; border-bottom: 3px solid transparent; }
     .lateral a.activo { border-bottom-color: var(--primario); }
     .contenido { padding: 1.25rem 1rem; }
-    .columnas, .niveles { grid-template-columns: 1fr; }
+    .columnas, .ficha { grid-template-columns: 1fr; }
+    .umbral { grid-template-columns: 1fr 6rem; }
+    .umbral .actual { grid-column: 1 / -1; }
     .acceso .tarjeta.login { padding: 1.75rem 1.5rem; }
 }

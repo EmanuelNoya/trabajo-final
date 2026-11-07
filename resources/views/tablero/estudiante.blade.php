@@ -4,209 +4,224 @@
 
 @php
     use App\Models\UmbralRiesgo;
-    use App\Servicios\ModeloRiesgo;
 
-    $porcentaje = fn ($v) => number_format($v * 100, 1, ',', '') . ' %';
-    $dos = fn ($v) => number_format($v, 2, ',', '');
+    $decimal = fn ($v) => number_format((float) $v, 2, ',', '');
     $nivel = $umbral->nivel((float) $estimacion->probabilidad);
 
-    // Aportes menores a 0,05 se consideran sin efecto apreciable
-    $principales = collect($contribuciones)->filter(fn ($c) => $c > 0.05)->keys()->take(2);
-    $maximo = max(array_map('abs', $contribuciones)) ?: 1;
+    $etiquetas = [
+        'asistencia' => 'Asistencia (aula virtual)',
+        'calificaciones' => 'Calificaciones',
+        'entregas' => 'Entregas',
+        'participacion' => 'Participación (percentil)',
+    ];
+
+    // HU-10, criterio 2: los dos indicadores que más elevan el riesgo (aporte mayor a 0,05)
+    $principales = collect($contribuciones)->filter(fn ($c) => $c > 0.05)->keys()->take(2)->all();
 @endphp
 
 @section('contenido')
-<p><a href="{{ route('tablero.show', $curso) }}">← {{ $curso->asignatura }} · Comisión {{ $curso->comision }}</a></p>
-
 <div class="encabezado">
-    <h1>{{ $inscripcion->estudiante->apellido }}, {{ $inscripcion->estudiante->nombre }}</h1>
-    <span class="detalle">Legajo {{ $inscripcion->estudiante->legajo }}</span>
-</div>
-
-{{-- Criterio 1 --}}
-<div class="niveles">
-    <div class="nivel nivel-{{ $nivel }}">
-        <span class="cantidad">{{ $porcentaje($estimacion->probabilidad) }}</span>
-        <span>Probabilidad estimada</span>
-    </div>
-    <div class="nivel nivel-{{ $nivel }}">
-        <span class="cantidad">{{ ucfirst($nivel) }}</span>
-        <span>{{ UmbralRiesgo::NIVELES[$nivel] }}</span>
-    </div>
-    <div class="nivel">
-        <span class="cantidad">{{ $ejecucion->fecha_corte->format('d/m') }}</span>
-        <span>Registros hasta el corte ({{ $ejecucion->fecha_corte->format('d/m/Y') }})</span>
-    </div>
-</div>
-
-{{-- Criterio 2: lo que más contribuye --}}
-<div class="tarjeta seccion">
-    <h2>Qué explica su nivel de riesgo</h2>
-
-    @if ($principales->isNotEmpty())
-        <p>
-            Lo que más eleva su riesgo:
-            <strong>{{ $principales->map(fn ($i) => mb_strtolower(ModeloRiesgo::ETIQUETAS[$i]))->join(' y ') }}</strong>.
+    <div>
+        <div class="migas"><a href="{{ route('tablero.show', $curso) }}">Tablero del curso</a> › Situación individual</div>
+        <h1>{{ $inscripcion->estudiante->apellido }}, {{ $inscripcion->estudiante->nombre }}</h1>
+        <p class="subtitulo">
+            Legajo {{ $inscripcion->estudiante->legajo }} · {{ $curso->asignatura }} · Comisión {{ $curso->comision }}
         </p>
-    @else
-        <p>Ningún indicador eleva su riesgo de manera apreciable.</p>
-    @endif
-
-    <table class="tabla aportes">
-        <tbody>
-            @foreach ($contribuciones as $indicador => $aporte)
-                <tr>
-                    <td>{{ ModeloRiesgo::ETIQUETAS[$indicador] }}</td>
-                    <td class="barra-celda">
-                        <span class="barra {{ $aporte > 0 ? 'eleva' : 'reduce' }}"
-                              style="width: {{ round(abs($aporte) / $maximo * 100) }}%"></span>
-                    </td>
-                    <td class="detalle">
-                        @if (abs($aporte) <= 0.05)
-                            Sin efecto apreciable
-                        @elseif ($aporte > 0)
-                            Eleva el riesgo
-                        @else
-                            Reduce el riesgo
-                        @endif
-                    </td>
-                </tr>
-            @endforeach
-        </tbody>
-    </table>
-    <p class="ayuda">
-        El largo de cada barra muestra cuánto pesa el indicador en la estimación, según el modelo
-        {{ $ejecucion->modelo->version }}.
-    </p>
+    </div>
 </div>
 
-{{-- Criterio 2: comparación con el curso --}}
-<div class="tarjeta seccion">
-    <h2>Comparación con el promedio del curso</h2>
+<div class="ficha">
+    {{-- HU-10, criterio 1 --}}
+    <div class="tarjeta">
+        <span class="rotulo">Probabilidad de riesgo</span>
+        <span class="probabilidad-grande {{ $nivel }}">{{ $decimal($estimacion->probabilidad) }}</span>
+        <span class="etiqueta {{ $nivel }}">{{ UmbralRiesgo::NIVELES[$nivel] }}</span>
+        <p class="nota">
+            Estimación del {{ $ejecucion->created_at->format('d/m/Y') }} · corte al 30 %
+            ({{ $ejecucion->fecha_corte->format('d/m/Y') }}) · Modelo {{ $ejecucion->modelo->version }}
+        </p>
+    </div>
 
-    <div class="grafico"><canvas id="grafico-comparacion"></canvas></div>
+    {{-- HU-10, criterio 2 --}}
+    <div class="tarjeta">
+        <h2>Indicadores al momento de corte</h2>
 
-    <table class="tabla seccion">
-        <thead>
-            <tr><th>Indicador</th><th>Estudiante</th><th>Promedio del curso</th><th>Diferencia</th></tr>
-        </thead>
-        <tbody>
-            @foreach (ModeloRiesgo::INDICADORES as $i)
-                @php $diferencia = $valores[$i] - (float) $promedios[$i]; @endphp
-                <tr>
-                    <td>{{ ModeloRiesgo::ETIQUETAS[$i] }}</td>
-                    <td><strong>{{ $dos($valores[$i]) }}</strong></td>
-                    <td>{{ $dos($promedios[$i]) }}</td>
-                    <td class="{{ $diferencia < 0 ? 'texto-alto' : '' }}">
-                        {{ $diferencia > 0 ? '+' : '' }}{{ $dos($diferencia) }}
-                    </td>
-                </tr>
-            @endforeach
-        </tbody>
-    </table>
-</div>
-
-{{-- Registros que originaron los indicadores --}}
-<div class="tarjeta sin-relleno seccion">
-    <h2 class="titulo-tabla">Evaluaciones</h2>
-    <table class="tabla">
-        <thead>
-            <tr><th>Evaluación</th><th>Vencimiento</th><th>Entrega</th><th>Estado</th><th>Calificación</th></tr>
-        </thead>
-        <tbody>
-            @forelse ($evaluaciones as $evaluacion)
-                @php $entrega = $evaluacion->entregas->first(); @endphp
-                <tr>
-                    <td>
-                        {{ $evaluacion->denominacion }}
-                        @if ($evaluacion->fecha_vencimiento->gt($ejecucion->fecha_corte))
-                            <div class="detalle">Vence después del corte: no cuenta para entregas</div>
-                        @endif
-                    </td>
-                    <td>{{ $evaluacion->fecha_vencimiento->format('d/m/Y') }}</td>
-                    <td>{{ $entrega?->fecha_entrega?->format('d/m/Y') ?? '—' }}</td>
-                    <td>
-                        @switch($entrega?->estado() ?? 'no_presentada')
-                            @case('en_plazo') <span class="etiqueta bajo">En plazo</span> @break
-                            @case('fuera_de_plazo') <span class="etiqueta medio">Fuera de plazo</span> @break
-                            @default <span class="etiqueta alto">No presentada</span>
-                        @endswitch
-                    </td>
-                    <td>{{ $entrega?->calificacion !== null ? $dos($entrega->calificacion) : '—' }}</td>
-                </tr>
-            @empty
-                <tr><td colspan="5">Sin evaluaciones registradas.</td></tr>
-            @endforelse
-        </tbody>
-    </table>
-</div>
-
-<div class="tarjeta sin-relleno seccion">
-    <h2 class="titulo-tabla">Actividad y participación por semana (hasta el corte)</h2>
-    <table class="tabla">
-        <thead>
-            <tr><th>Semana</th><th>Actividad en el aula virtual</th><th>Intervenciones en foros</th></tr>
-        </thead>
-        <tbody>
-            @for ($s = 1; $s <= $semanas; $s++)
-                <tr>
-                    <td>{{ $s }}</td>
-                    <td>{{ ($actividad[$s] ?? false) ? 'Sí' : 'No' }}</td>
-                    <td>{{ $foros[$s] ?? 0 }}</td>
-                </tr>
-            @endfor
-        </tbody>
-    </table>
-</div>
-
-{{-- Evolución --}}
-@if ($historial->count() > 1)
-    <div class="tarjeta sin-relleno seccion">
-        <h2 class="titulo-tabla">Estimaciones del estudiante</h2>
-        <table class="tabla">
+        <table class="tabla tabla-indicadores">
             <thead>
-                <tr><th>Fecha</th><th>Corte</th><th>Probabilidad</th><th>Nivel con los umbrales actuales</th></tr>
+                <tr>
+                    <th>Indicador</th>
+                    <th><span class="detalle">Valor</span></th>
+                    <th>Estudiante</th>
+                    <th>Promedio del curso</th>
+                    <th></th>
+                </tr>
             </thead>
             <tbody>
-                @foreach ($historial as $anterior)
-                    @php $nivelAnterior = $umbral->nivel((float) $anterior->probabilidad); @endphp
+                @foreach ($contribuciones as $indicador => $aporte)
+                    @php $contribuye = in_array($indicador, $principales, true); @endphp
                     <tr>
-                        <td>
-                            {{ $anterior->ejecucion->created_at->format('d/m/Y H:i') }}
-                            @if ($loop->first) <span class="etiqueta activa">Actual</span> @endif
+                        <td class="{{ $contribuye ? 'contribuye' : '' }}">{{ $etiquetas[$indicador] }}</td>
+                        <td class="barra-indicador">
+                            <span class="pista" aria-hidden="true">
+                                <span class="relleno {{ $contribuye ? 'eleva' : '' }}" style="width: {{ round($valores[$indicador] * 100) }}%"></span>
+                            </span>
                         </td>
-                        <td>{{ $anterior->ejecucion->fecha_corte->format('d/m/Y') }}</td>
-                        <td>{{ $porcentaje($anterior->probabilidad) }}</td>
-                        <td><span class="etiqueta {{ $nivelAnterior }}">{{ UmbralRiesgo::NIVELES[$nivelAnterior] }}</span></td>
+                        <td><strong>{{ $decimal($valores[$indicador]) }}</strong></td>
+                        <td>{{ $decimal($promedios[$indicador]) }}</td>
+                        <td>
+                            @if ($contribuye)
+                                <span class="etiqueta alto">Contribuye al riesgo</span>
+                            @endif
+                        </td>
                     </tr>
                 @endforeach
             </tbody>
         </table>
-    </div>
-@endif
 
-<p class="ayuda seccion">
-    La probabilidad es una estimación para priorizar el acompañamiento, no un diagnóstico.
-</p>
+        <p class="nota">
+            @if ($principales !== [])
+                Los indicadores están ordenados por su aporte a la probabilidad, según el modelo. Se señalan los que más la elevan.
+            @else
+                Ningún indicador eleva su riesgo de manera apreciable.
+            @endif
+        </p>
+
+        <details class="desplegable" id="detalle-grafico">
+            <summary>Ver gráfico de comparación con el curso</summary>
+            <div class="grafico"><canvas id="grafico-comparacion"></canvas></div>
+        </details>
+    </div>
+</div>
+
+<div class="tarjeta sin-relleno seccion">
+    <h2 class="titulo-tabla">Registros que originan los indicadores</h2>
+    <table class="tabla">
+        <thead>
+            <tr>
+                <th>Semanas con actividad</th>
+                <th>Entregas vencidas</th>
+                <th>Presentadas en plazo</th>
+                <th>Promedio de calificaciones</th>
+                <th>Intervenciones en foros</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>{{ $resumen['semanas_activas'] }} de {{ $semanas }}</td>
+                <td>{{ $resumen['vencidas'] }}</td>
+                <td>{{ $resumen['en_plazo'] }}</td>
+                <td>{{ $resumen['promedio'] !== null ? $decimal($resumen['promedio']) : '—' }}</td>
+                <td>{{ $resumen['intervenciones'] }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="interior">
+        <details class="desplegable">
+            <summary>Ver el detalle por evaluación y por semana</summary>
+
+            <table class="tabla seccion">
+                <thead>
+                    <tr><th>Evaluación</th><th>Vencimiento</th><th>Entrega</th><th>Estado</th><th>Calificación</th></tr>
+                </thead>
+                <tbody>
+                    @forelse ($evaluaciones as $evaluacion)
+                        @php $entrega = $evaluacion->entregas->first(); @endphp
+                        <tr>
+                            <td>
+                                {{ $evaluacion->denominacion }}
+                                @if ($evaluacion->fecha_vencimiento->gt($ejecucion->fecha_corte))
+                                    <div class="detalle">Vence después del corte: no cuenta para entregas</div>
+                                @endif
+                            </td>
+                            <td>{{ $evaluacion->fecha_vencimiento->format('d/m/Y') }}</td>
+                            <td>{{ $entrega?->fecha_entrega?->format('d/m/Y') ?? '—' }}</td>
+                            <td>
+                                @switch($entrega?->estado() ?? 'no_presentada')
+                                    @case('en_plazo') <span class="etiqueta bajo">En plazo</span> @break
+                                    @case('fuera_de_plazo') <span class="etiqueta medio">Fuera de plazo</span> @break
+                                    @default <span class="etiqueta alto">No presentada</span>
+                                @endswitch
+                            </td>
+                            <td>{{ $entrega?->calificacion !== null ? $decimal($entrega->calificacion) : '—' }}</td>
+                        </tr>
+                    @empty
+                        <tr><td colspan="5">Sin evaluaciones registradas.</td></tr>
+                    @endforelse
+                </tbody>
+            </table>
+
+            <table class="tabla seccion">
+                <thead>
+                    <tr><th>Semana</th><th>Actividad en el aula virtual</th><th>Intervenciones en foros</th></tr>
+                </thead>
+                <tbody>
+                    @for ($s = 1; $s <= $semanas; $s++)
+                        <tr>
+                            <td>{{ $s }}</td>
+                            <td>{{ ($actividad[$s] ?? false) ? 'Sí' : 'No' }}</td>
+                            <td>{{ $foros[$s] ?? 0 }}</td>
+                        </tr>
+                    @endfor
+                </tbody>
+            </table>
+        </details>
+    </div>
+</div>
+
+<div class="tarjeta sin-relleno seccion">
+    <h2 class="titulo-tabla">Historial de estimaciones</h2>
+    <table class="tabla">
+        <thead>
+            <tr><th>Fecha</th><th>Corte</th><th>Probabilidad</th><th>Nivel</th></tr>
+        </thead>
+        <tbody>
+            @foreach ($historial as $anterior)
+                @php $nivelAnterior = $umbral->nivel((float) $anterior->probabilidad); @endphp
+                <tr>
+                    <td>
+                        {{ $anterior->ejecucion->created_at->format('d/m/Y H:i') }}
+                        @if ($loop->first) <span class="detalle">· actual</span> @endif
+                    </td>
+                    <td>{{ $anterior->ejecucion->fecha_corte->format('d/m/Y') }}</td>
+                    <td>{{ $decimal($anterior->probabilidad) }}</td>
+                    <td><span class="etiqueta {{ $nivelAnterior }}">{{ ucfirst($nivelAnterior) }}</span></td>
+                </tr>
+            @endforeach
+        </tbody>
+    </table>
+    <p class="nota">
+        La estimación orienta la priorización. La decisión de contactar al estudiante y el tipo de acompañamiento
+        corresponden al docente y a las áreas académicas. Los niveles se muestran con los umbrales vigentes de la carrera.
+    </p>
+</div>
 @endsection
 
 @push('scripts')
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <script>
-        new Chart(document.getElementById('grafico-comparacion'), {
-            type: 'bar',
-            data: {
-                labels: @json(array_values(App\Servicios\ModeloRiesgo::ETIQUETAS)),
-                datasets: [
-                    { label: 'Estudiante', data: @json(array_values($valores)), backgroundColor: '#1f4e79' },
-                    { label: 'Promedio del curso', data: @json(array_map('floatval', array_values($promedios))), backgroundColor: '#98a2b3' },
-                ],
-            },
-            options: {
-                maintainAspectRatio: false,
-                scales: { y: { min: 0, max: 1 } },
-                plugins: { legend: { position: 'bottom' } },
-            },
+        // El gráfico se crea la primera vez que se abre el desplegable (cerrado, el lienzo no tiene tamaño)
+        const desplegable = document.getElementById('detalle-grafico');
+        let grafico = null;
+
+        desplegable.addEventListener('toggle', () => {
+            if (!desplegable.open || grafico) return;
+
+            grafico = new Chart(document.getElementById('grafico-comparacion'), {
+                type: 'bar',
+                data: {
+                    labels: @json(array_values($etiquetas)),
+                    datasets: [
+                        { label: 'Estudiante', data: @json(array_values($valores)), backgroundColor: '#1e3a5f' },
+                        { label: 'Promedio del curso', data: @json(array_map('floatval', array_values($promedios))), backgroundColor: '#98a2b3' },
+                    ],
+                },
+                options: {
+                    maintainAspectRatio: false,
+                    scales: { y: { min: 0, max: 1 } },
+                    plugins: { legend: { position: 'bottom' } },
+                },
+            });
         });
     </script>
 @endpush

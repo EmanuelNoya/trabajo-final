@@ -16,8 +16,8 @@
             @forelse ($carreras as $carrera)
                 <tr>
                     <td>{{ $carrera->nombre }}</td>
-                    <td>{{ round($carrera->vigente->umbral_medio * 100, 2) }} %</td>
-                    <td>{{ round($carrera->vigente->umbral_alto * 100, 2) }} %</td>
+                    <td>{{ number_format((float) $carrera->vigente->umbral_medio, 2, ',', '') }}</td>
+                    <td>{{ number_format((float) $carrera->vigente->umbral_alto, 2, ',', '') }}</td>
                     <td>{{ $carrera->vigente->fecha_desde?->format('d/m/Y') ?? 'Valores por defecto' }}</td>
                     <td class="acciones"><a href="{{ route('umbrales.edit', $carrera) }}">Configurar</a></td>
                 </tr>

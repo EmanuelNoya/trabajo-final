@@ -3,76 +3,83 @@
 @section('titulo', 'Cursos de la carrera')
 
 @php
-    use App\Models\UmbralRiesgo;
-    $pct = fn ($v) => number_format($v, 0, ',', '') . ' %';
+    $pct = fn ($v) => number_format($v, 1, ',', '') . ' %';
+    $carreras = $filas->pluck('curso.carrera.nombre')->unique()->implode(' · ');
 @endphp
 
 @section('contenido')
 <div class="encabezado">
-    <h1>Estado de los cursos de la carrera</h1>
+    <div>
+        <h1>Cursos de la carrera</h1>
+        <p class="subtitulo">{{ $carreras ?: 'Sin cursos registrados' }}</p>
+    </div>
 </div>
-
-<p class="ayuda">
-    Ordenados por proporción de estudiantes en riesgo alto, según la última estimación de cada curso
-    y los umbrales vigentes de la carrera.
-</p>
 
 <div class="tarjeta sin-relleno">
     <table class="tabla">
         <thead>
             <tr>
-                <th>Curso</th>
+                <th>Asignatura</th>
+                <th>Comisión</th>
                 <th>Docente</th>
                 <th>Estudiantes</th>
-                @foreach (UmbralRiesgo::NIVELES as $nivel => $etiqueta)
-                    <th>{{ $etiqueta }}</th>
-                @endforeach
-                <th>Distribución</th>
+                <th>Alto</th>
+                <th>Medio</th>
+                <th>Bajo</th>
+                <th>Última estimación</th>
+                <th><span class="detalle">Tablero</span></th>
             </tr>
         </thead>
         <tbody>
             @forelse ($filas as $fila)
+                @php $curso = $fila['curso']; @endphp
                 <tr>
                     <td>
-                        {{-- Criterio 2 --}}
-                        <a href="{{ route('tablero.show', $fila['curso']) }}">{{ $fila['curso']->asignatura }}</a>
-                        <div class="detalle">Comisión {{ $fila['curso']->comision }} · {{ $fila['curso']->periodo_lectivo }}</div>
+                        {{ $curso->asignatura }}
+                        <div class="detalle">{{ $curso->periodo_lectivo }}</div>
                     </td>
-                    <td>{{ $fila['curso']->docente->apellido }}, {{ $fila['curso']->docente->nombre }}</td>
+                    <td>{{ $curso->comision }}</td>
+                    <td>{{ $curso->docente->apellido }}, {{ $curso->docente->nombre }}</td>
 
                     @if ($fila['conteo'] === null)
-                        {{-- Criterio 3 --}}
-                        <td colspan="5">
-                            <span class="etiqueta inactiva">Sin estimación</span>
-                            <div class="detalle">
-                                @if ($fila['pendientes'] !== [])
-                                    Faltan registros: {{ implode(' ', $fila['pendientes']) }}
+                        @php
+                            $faltanArchivos = collect($fila['pendientes'])
+                                ->contains(fn ($p) => str_starts_with($p, 'Falta') || str_contains($p, 'llega hasta'));
+                        @endphp
+                        <td>{{ $curso->inscripciones_count ?: '—' }}</td>
+                        <td>—</td>
+                        <td>—</td>
+                        <td>—</td>
+                        <td>
+                            <span class="etiqueta observaciones" title="{{ implode(' ', $fila['pendientes']) }}">
+                                @if ($faltanArchivos)
+                                    Faltan archivos
+                                @elseif ($fila['pendientes'] !== [])
+                                    Antes del corte
                                 @else
-                                    Los registros están completos: falta ejecutar la estimación.
+                                    Sin estimar
                                 @endif
-                            </div>
+                            </span>
                         </td>
+                        <td></td>
                     @else
-                        <td>
-                            {{ $fila['total'] }}
-                            <div class="detalle">Estimación del {{ $fila['ejecucion']->created_at->format('d/m/Y') }}</div>
-                        </td>
-                        @foreach (UmbralRiesgo::NIVELES as $nivel => $etiqueta)
-                            <td>{{ $fila['conteo'][$nivel] }} <span class="detalle">· {{ $pct($fila['porcentaje'][$nivel]) }}</span></td>
-                        @endforeach
-                        <td>
-                            <div class="distribucion" title="Alto {{ $pct($fila['porcentaje']['alto']) }} · Medio {{ $pct($fila['porcentaje']['medio']) }} · Bajo {{ $pct($fila['porcentaje']['bajo']) }}">
-                                @foreach (['alto', 'medio', 'bajo'] as $nivel)
-                                    <span class="{{ $nivel }}" style="width: {{ $fila['porcentaje'][$nivel] }}%"></span>
-                                @endforeach
-                            </div>
-                        </td>
+                        <td>{{ $fila['total'] }}</td>
+                        <td class="texto-alto">{{ $fila['conteo']['alto'] }} ({{ $pct($fila['porcentaje']['alto']) }})</td>
+                        <td>{{ $fila['conteo']['medio'] }} <span class="detalle">({{ $pct($fila['porcentaje']['medio']) }})</span></td>
+                        <td>{{ $fila['conteo']['bajo'] }} <span class="detalle">({{ $pct($fila['porcentaje']['bajo']) }})</span></td>
+                        <td>{{ $fila['ejecucion']->created_at->format('d/m/Y') }}</td>
+                        <td class="acciones"><a href="{{ route('tablero.show', $curso) }}" class="ver">Ver tablero</a></td>
                     @endif
                 </tr>
             @empty
-                <tr><td colspan="7">No hay cursos en tu carrera.</td></tr>
+                <tr><td colspan="9">No hay cursos en tu carrera.</td></tr>
             @endforelse
         </tbody>
     </table>
+
+    <p class="nota">
+        Ordenados de mayor a menor proporción de estudiantes en riesgo alto, según la última estimación de cada curso
+        y los umbrales vigentes de la carrera. Pasá el cursor sobre la etiqueta de un curso sin estimación para ver qué falta.
+    </p>
 </div>
 @endsection

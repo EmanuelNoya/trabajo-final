@@ -180,9 +180,29 @@ class TableroController extends Controller
             ->orderByDesc('ejecucion_id')
             ->get();
 
+        // Resumen de los registros hasta el corte (Figura 9)
+        $corte = $ejecucion->fecha_corte;
+        $propias = $evaluaciones->mapWithKeys(fn ($e) => [$e->id => $e->entregas->first()]);
+        $vencidas = $evaluaciones->filter(fn ($e) => $e->fecha_vencimiento->lte($corte));
+
+        $resumen = [
+            'semanas_activas' => $actividad->filter(fn ($activa, $semana) => $activa && $semana <= $semanas)->count(),
+            'vencidas' => $vencidas->count(),
+            'en_plazo' => $vencidas->filter(function ($evaluacion) use ($propias) {
+                $entrega = $propias[$evaluacion->id];
+
+                return $entrega?->fecha_entrega !== null
+                    && $entrega->fecha_entrega->lte($evaluacion->fecha_vencimiento);
+            })->count(),
+            'promedio' => $propias
+                ->filter(fn ($e) => $e?->fecha_entrega !== null && $e->fecha_entrega->lte($corte) && $e->calificacion !== null)
+                ->avg(fn ($e) => (float) $e->calificacion),
+            'intervenciones' => $foros->filter(fn ($cantidad, $semana) => $semana <= $semanas)->sum(),
+        ];
+
         return view('tablero.estudiante', compact(
             'curso', 'inscripcion', 'ejecucion', 'estimacion', 'umbral', 'valores',
-            'contribuciones', 'promedios', 'semanas', 'actividad', 'foros', 'evaluaciones', 'historial'
+            'contribuciones', 'promedios', 'semanas', 'actividad', 'foros', 'evaluaciones', 'historial', 'resumen'
         ));
     }
 }

@@ -15,6 +15,7 @@ class EstadoCarreraController extends Controller
     {
         $cursos = Curso::visiblesPara($request->user())
             ->with(['carrera', 'docente', 'ejecucionActual.estimaciones:id,ejecucion_id,probabilidad'])
+            ->withCount('inscripciones')
             ->get();
 
         $umbrales = []; // carrera_id => umbral vigente (una consulta por carrera)

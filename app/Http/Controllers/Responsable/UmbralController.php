@@ -14,12 +14,17 @@ use Illuminate\View\View;
 
 class UmbralController extends Controller
 {
-    public function index(Request $request): View
+    public function index(Request $request): View|RedirectResponse
     {
         $carreras = Carrera::where('responsable_id', $request->user()->id)
             ->orderBy('nombre')
             ->get()
             ->each(fn ($c) => $c->vigente = UmbralRiesgo::vigenteDe($c->id));
+
+        // Con una sola carrera a cargo, se va directo a sus umbrales (Figura 10)
+        if ($carreras->count() === 1) {
+            return redirect()->route('umbrales.edit', $carreras->first());
+        }
 
         return view('responsable.umbrales.index', compact('carreras'));
     }
@@ -45,15 +50,17 @@ class UmbralController extends Controller
         $actual = collect(UmbralRiesgo::NIVELES)
             ->map(fn ($etiqueta, $nivel) => $probabilidades->filter(fn ($p) => $vigente->nivel($p) === $nivel)->count());
 
-        // Criterio 3: historial completo, con quién hizo cada cambio y desde cuándo rige
+        // HU-11, criterio 3: historial completo y último cambio registrado
         $historial = $carrera->umbrales()
             ->with('usuario')
             ->orderByDesc('fecha_desde')
             ->orderByDesc('id')
             ->get();
 
+        $ultimo = $historial->sortByDesc('id')->first();
+
         return view('responsable.umbrales.edit', compact(
-            'carrera', 'vigente', 'probabilidades', 'actual', 'historial'
+            'carrera', 'vigente', 'probabilidades', 'actual', 'historial', 'ultimo'
         ));
     }
 
@@ -62,16 +69,16 @@ class UmbralController extends Controller
         Gate::authorize('configurarUmbrales', $carrera);
 
         $datos = $request->validate([
-            'umbral_medio' => ['required', 'numeric', 'between:1,99'],
-            'umbral_alto' => ['required', 'numeric', 'between:1,99', 'gt:umbral_medio'],
+            'umbral_medio' => ['required', 'numeric', 'between:0.01,0.99'],
+            'umbral_alto' => ['required', 'numeric', 'between:0.01,0.99', 'gt:umbral_medio'],
             'fecha_desde' => ['required', 'date', 'after_or_equal:today'],
         ], [
             'umbral_medio.required' => 'Ingresá el umbral de riesgo medio.',
             'umbral_alto.required' => 'Ingresá el umbral de riesgo alto.',
             'umbral_medio.numeric' => 'Los umbrales deben ser números.',
             'umbral_alto.numeric' => 'Los umbrales deben ser números.',
-            'umbral_medio.between' => 'El umbral de riesgo medio debe estar entre 1 % y 99 %.',
-            'umbral_alto.between' => 'El umbral de riesgo alto debe estar entre 1 % y 99 %.',
+            'umbral_medio.between' => 'El umbral de riesgo medio debe estar entre 0,01 y 0,99.',
+            'umbral_alto.between' => 'El umbral de riesgo alto debe estar entre 0,01 y 0,99.',
             'umbral_alto.gt' => 'El umbral de riesgo alto tiene que ser mayor que el de riesgo medio.', // criterio 1
             'fecha_desde.required' => 'Indicá desde qué fecha rigen.',
             'fecha_desde.date' => 'La fecha no es válida.',
@@ -82,8 +89,8 @@ class UmbralController extends Controller
         $umbral = UmbralRiesgo::create([
             'carrera_id' => $carrera->id,
             'usuario_id' => $request->user()->id,
-            'umbral_medio' => round($datos['umbral_medio'] / 100, 4),
-            'umbral_alto' => round($datos['umbral_alto'] / 100, 4),
+            'umbral_medio' => round((float) $datos['umbral_medio'], 4),
+            'umbral_alto' => round((float) $datos['umbral_alto'], 4),
             'fecha_desde' => $datos['fecha_desde'],
         ]);
 
