@@ -133,3 +133,13 @@ h2 { font-size: 1.15rem; margin: 0 0 .75rem; }
 @media (max-width: 640px) {
     .niveles { grid-template-columns: 1fr; }
 }
+
+/* Situación individual */
+.grafico { position: relative; height: 260px; }
+.aportes td { border-bottom: 0; padding: .4rem .5rem; }
+.aportes td:first-child { width: 9rem; font-weight: 600; }
+.barra-celda { width: 60%; }
+.barra { display: block; height: .75rem; border-radius: 999px; }
+.barra.eleva  { background: #d92d20; }
+.barra.reduce { background: #12b76a; }
+.texto-alto { color: #b42318; font-weight: 600; }

@@ -33,6 +33,8 @@ Route::middleware('auth')->group(function () {
     Route::middleware('rol:docente,responsable')->group(function () {
         Route::get('/tablero', [TableroController::class, 'index'])->name('tablero.index');
         Route::get('/tablero/{curso}', [TableroController::class, 'show'])->name('tablero.show');
+        Route::get('/tablero/{curso}/estudiantes/{inscripcion}', [TableroController::class, 'estudiante'])
+            ->name('tablero.estudiante');
     });
 
     Route::middleware('rol:analista')->prefix('analista')->group(function () {

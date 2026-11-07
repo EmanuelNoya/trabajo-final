@@ -6,6 +6,7 @@
     <title>@yield('titulo') · {{ config('app.name') }}</title>
     <link rel="stylesheet" href="{{ asset('css/app.css') }}">
 </head>
+@stack('scripts')
 <body>
     @auth
         <header class="barra">
