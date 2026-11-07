@@ -11,6 +11,8 @@ use App\Models\Evaluacion;
 use App\Models\ParticipacionForo;
 use App\Servicios\ArchivoInvalido;
 use App\Servicios\ImportadorNomina;
+use App\Models\Inscripcion;
+use App\Servicios\CalculadoraIndicadores;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -64,7 +66,7 @@ class CursoController extends Controller
             ->with('estado', 'Curso registrado. Ahora podés incorporar su nómina.');
     }
 
-    public function show(Curso $curso): View
+    public function show(Curso $curso, CalculadoraIndicadores $calculadora): View
     {
         $curso->load(['carrera', 'docente', 'cargas' => fn ($q) => $q->with('usuario')->latest()]);
 
@@ -73,11 +75,9 @@ class CursoController extends Controller
             ->get()
             ->sortBy(fn ($i) => $i->estudiante->apellido . ' ' . $i->estudiante->nombre);
 
-        $semanasActividad = ActividadSemanal::vigentesDelCurso($curso)
-            ->distinct()
-            ->orderBy('semana')
-            ->pluck('semana');
-        
+        $semanasActividad = ActividadSemanal::vigentesDelCurso($curso)->distinct()->orderBy('semana')->pluck('semana');
+        $semanasForos = ParticipacionForo::vigentesDelCurso($curso)->distinct()->orderBy('semana')->pluck('semana');
+
         $evaluaciones = Evaluacion::vigentesDelCurso($curso)
             ->withCount([
                 'entregas as en_plazo' => fn ($q) => $q->whereColumn('entrega.fecha_entrega', '<=', 'evaluacion.fecha_vencimiento'),
@@ -87,11 +87,6 @@ class CursoController extends Controller
             ->withAvg('entregas as promedio', 'calificacion')
             ->orderBy('fecha_vencimiento')
             ->get();
-        
-        $semanasForos = ParticipacionForo::vigentesDelCurso($curso)
-            ->distinct()
-            ->orderBy('semana')
-            ->pluck('semana');
 
         // Totales por inscripción, para la tabla de estudiantes
         $semanasActivas = ActividadSemanal::vigentesDelCurso($curso)
@@ -105,7 +100,73 @@ class CursoController extends Controller
             ->groupBy('inscripcion_id')
             ->pluck('total', 'inscripcion_id');
 
-        return view('analista.cursos.show', compact('curso', 'inscripciones', 'semanasActividad', 'evaluaciones', 'semanasForos', 'semanasActivas', 'intervenciones'));
+        // "semanas 1 a 6", o la lista si hay saltos
+        $rango = function ($semanas) {
+            if ($semanas->isEmpty()) {
+                return null;
+            }
+
+            return $semanas->max() - $semanas->min() + 1 === $semanas->count()
+                ? "semanas {$semanas->min()} a {$semanas->max()}"
+                : 'semanas ' . $semanas->implode(', ');
+        };
+
+        // Estado de cada archivo requerido (Figura 7)
+        $definiciones = [
+            'nomina' => [
+                'nombre' => 'Nómina',
+                'contenido' => 'legajo, apellido, nombre, documento, fecha_baja',
+                'ruta' => route('cursos.nomina', $curso),
+                'reemplazo' => 'Reemplazar',
+                'detalle' => $inscripciones->count() . ' estudiantes',
+            ],
+            'actividad' => [
+                'nombre' => 'Actividad en el aula virtual',
+                'contenido' => 'legajo, semana, con_actividad',
+                'ruta' => route('cursos.incorporar', [$curso, 'actividad']),
+                'reemplazo' => 'Agregar semanas',
+                'detalle' => $rango($semanasActividad),
+            ],
+            'calificaciones' => [
+                'nombre' => 'Calificaciones y entregas',
+                'contenido' => 'legajo, evaluacion, tipo, fecha_vencimiento, fecha_entrega, calificacion',
+                'ruta' => route('cursos.incorporar', [$curso, 'calificaciones']),
+                'reemplazo' => 'Reemplazar',
+                'detalle' => $evaluaciones->count() . ' evaluaciones',
+            ],
+            'foros' => [
+                'nombre' => 'Participación en foros',
+                'contenido' => 'legajo, semana, intervenciones',
+                'ruta' => route('cursos.incorporar', [$curso, 'foros']),
+                'reemplazo' => 'Agregar semanas',
+                'detalle' => $rango($semanasForos),
+            ],
+        ];
+
+        $vigentes = $curso->cargas->where('estado', 'vigente'); // de la más reciente a la más antigua
+
+        $archivos = collect($definiciones)->map(function (array $definicion, string $tipo) use ($vigentes) {
+            $ultima = $vigentes->firstWhere('tipo_archivo', $tipo);
+
+            return $definicion + [
+                'ultima' => $ultima,
+                'estado' => match (true) {
+                    $ultima === null => 'pendiente',
+                    $ultima->filas_rechazadas > 0 => 'observaciones',
+                    default => 'incorporado',
+                },
+                'accion' => $ultima ? $definicion['reemplazo'] : 'Seleccionar archivo',
+            ];
+        });
+
+        // Lo que falta para poder estimar (HU-07, criterios 1 y 3)
+        $pendientes = $calculadora->verificar($curso);
+        $semanaCorte = $calculadora->semanasHastaCorte($curso);
+
+        return view('analista.cursos.show', compact(
+            'curso', 'inscripciones', 'semanasActividad', 'evaluaciones', 'semanasForos',
+            'semanasActivas', 'intervenciones', 'archivos', 'pendientes', 'semanaCorte'
+        ));
     }
 
     public function incorporarNomina(Request $request, Curso $curso, ImportadorNomina $importador): RedirectResponse
@@ -123,13 +184,27 @@ class CursoController extends Controller
         if ($resultado['carga'] === null) {
             return back()
                 ->withErrors(['archivo' => 'Ninguna fila superó la validación: no se incorporó el archivo.'])
-                ->with('rechazadas', $resultado['rechazadas']);
+                ->with('rechazadas', $resultado['rechazadas'])
+                ->with('resultado', [
+                    'archivo' => $request->file('archivo')->getClientOriginalName(),
+                    'validas' => 0,
+                    'rechazadas' => count($resultado['rechazadas']),
+                    'extra' => null,
+                ]);
         }
 
         $carga = $resultado['carga'];
 
         return back()
-            ->with('estado', "Nómina incorporada: {$carga->filas_validas} filas válidas y {$carga->filas_rechazadas} rechazadas.")
-            ->with('rechazadas', $resultado['rechazadas']);
+            ->with('rechazadas', $resultado['rechazadas'])
+            ->with('resultado', [
+                'archivo' => $carga->nombre_archivo,
+                'validas' => $carga->filas_validas,
+                'rechazadas' => $carga->filas_rechazadas,
+                'extra' => [
+                    Inscripcion::where('carga_id', $carga->id)->whereNotNull('fecha_baja')->count(),
+                    'estudiantes con fecha de baja',
+                ],
+            ]);
     }
 }

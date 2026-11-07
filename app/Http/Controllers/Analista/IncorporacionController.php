@@ -53,7 +53,8 @@ class IncorporacionController extends Controller
 
             return back()
                 ->withErrors(['archivo' => 'Ninguna fila superó la validación: no se incorporó el archivo.'])
-                ->with('rechazadas', $analisis['rechazadas']);
+                ->with('rechazadas', $analisis['rechazadas'])
+                ->with('resultado', ['archivo' => $nombre, 'validas' => 0, 'rechazadas' => count($analisis['rechazadas']), 'extra' => null]);
         }
 
         // Hay datos ya incorporados que el archivo reemplazaría: se pide confirmación (HU-04, criterio 4)
@@ -107,16 +108,32 @@ class IncorporacionController extends Controller
     {
         $carga = $importador->incorporar($analisis, $ruta, $nombre, $curso, $request->user());
 
-        $mensaje = 'Archivo de ' . $importador->descripcion()
-            . " incorporado: {$carga->filas_validas} filas válidas y {$carga->filas_rechazadas} rechazadas.";
-
-        if (! empty($analisis['aviso'])) {
-            $mensaje .= ' ' . $analisis['aviso'];
-        }
-
         return redirect()->route('cursos.show', $curso)
-            ->with('estado', $mensaje)
-            ->with('rechazadas', $analisis['rechazadas']);
+            ->with('rechazadas', $analisis['rechazadas'])
+            ->with('resultado', [
+                'archivo' => $carga->nombre_archivo,
+                'validas' => $carga->filas_validas,
+                'rechazadas' => $carga->filas_rechazadas,
+                'extra' => $this->datoExtra($importador->tipo(), $analisis),
+            ]);
+    }
+
+    /**
+     * Tercer dato del resultado.
+     */
+    private function datoExtra(string $tipo, array $analisis): ?array
+    {
+        return match ($tipo) {
+            'calificaciones' => [
+                collect($analisis['validas'])
+                    ->filter(fn ($f) => $f['fecha_entrega'] !== null
+                        && $f['fecha_entrega'] > $analisis['evaluaciones'][$f['evaluacion']]['fecha_vencimiento'])
+                    ->count(),
+                'entregas fuera de plazo',
+            ],
+            'foros' => [count($analisis['completadas']), 'casos completados con cero intervenciones'],
+            default => null,
+        };
     }
 
     private function importador(string $tipo): ImportadorBase
