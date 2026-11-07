@@ -43,7 +43,7 @@ class DatabaseSeeder extends Seeder
             'asignatura' => 'Programación I',
             'comision' => 'A',
             'periodo_lectivo' => '2026-1C',
-            'modalidad' => 'Distancia',
+            'modalidad' => 'A distancia',
             'fecha_inicio' => '2026-03-16',
             'fecha_fin' => '2026-07-10',
         ]);
