@@ -3,6 +3,7 @@
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RecuperacionContrasenaController;
 use App\Http\Controllers\InicioController;
+use App\Http\Controllers\TableroController;
 use App\Http\Controllers\Administrador\UsuarioController;
 use App\Http\Controllers\Analista\CursoController;
 use App\Http\Controllers\Analista\IncorporacionController;
@@ -29,11 +30,10 @@ Route::middleware('auth')->group(function () {
     Route::post('/logout', [LoginController::class, 'destroy'])->name('logout');
     Route::get('/', InicioController::class)->name('inicio');
 
-    Route::view('/docente', 'inicio', ['titulo' => 'Mis cursos'])
-        ->middleware('rol:docente')->name('docente.inicio');
-        
-    Route::view('/responsable', 'inicio', ['titulo' => 'Cursos de la carrera'])
-        ->middleware('rol:responsable')->name('responsable.inicio');
+    Route::middleware('rol:docente,responsable')->group(function () {
+        Route::get('/tablero', [TableroController::class, 'index'])->name('tablero.index');
+        Route::get('/tablero/{curso}', [TableroController::class, 'show'])->name('tablero.show');
+    });
 
     Route::middleware('rol:analista')->prefix('analista')->group(function () {
         $tipos = implode('|', array_keys(IncorporacionController::IMPORTADORES)); // actividad|calificaciones

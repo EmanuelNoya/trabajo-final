@@ -112,3 +112,24 @@ h2 { font-size: 1.15rem; margin: 0 0 .75rem; }
 .alerta.aviso { background: #fffaeb; color: #93370d; border: 1px solid #fedf89; }
 .botones { display: flex; gap: .75rem; margin-top: 1.5rem; }
 .boton.claro { background: #fff; color: var(--texto); border: 1px solid var(--borde); }
+
+/* Tablero: tarjetas por nivel */
+.niveles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-top: 1rem; }
+.nivel {
+    display: flex; flex-direction: column; gap: .25rem;
+    padding: 1rem 1.25rem; background: #fff; border: 1px solid var(--borde);
+    border-left-width: 6px; border-radius: 8px; color: var(--texto); text-decoration: none;
+}
+.nivel .cantidad { font-size: 2rem; font-weight: 700; line-height: 1; }
+.nivel-alto  { border-left-color: #d92d20; }
+.nivel-medio { border-left-color: #f79009; }
+.nivel-bajo  { border-left-color: #12b76a; }
+.nivel.seleccionado { box-shadow: 0 0 0 2px var(--primario); }
+
+.etiqueta.alto  { background: #fef3f2; color: #b42318; }
+.etiqueta.medio { background: #fffaeb; color: #b54708; }
+.etiqueta.bajo  { background: #ecfdf3; color: #067647; }
+
+@media (max-width: 640px) {
+    .niveles { grid-template-columns: 1fr; }
+}
