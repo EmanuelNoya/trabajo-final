@@ -198,7 +198,7 @@
 @endsection
 
 @push('scripts')
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script src="{{ asset('js/chart.umd.js') }}"></script>
     <script>
         // El gráfico se crea la primera vez que se abre el desplegable (cerrado, el lienzo no tiene tamaño)
         const desplegable = document.getElementById('detalle-grafico');
