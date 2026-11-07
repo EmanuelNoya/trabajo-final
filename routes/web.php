@@ -6,6 +6,7 @@ use App\Http\Controllers\InicioController;
 use App\Http\Controllers\Administrador\UsuarioController;
 use App\Http\Controllers\Analista\CursoController;
 use App\Http\Controllers\Analista\IncorporacionController;
+use App\Http\Controllers\Analista\IndicadoresController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('guest')->group(function () {
@@ -47,6 +48,8 @@ Route::middleware('auth')->group(function () {
             ->where('tipo', $tipos)->name('cursos.incorporar.reemplazar');
         Route::delete('cursos/{curso}/incorporar/{tipo}/confirmar', [IncorporacionController::class, 'cancelar'])
             ->where('tipo', $tipos)->name('cursos.incorporar.cancelar');
+        Route::get('cursos/{curso}/indicadores', IndicadoresController::class)
+            ->name('cursos.indicadores');
     });
 
     Route::middleware('rol:administrador')->prefix('administrador')->group(function () {

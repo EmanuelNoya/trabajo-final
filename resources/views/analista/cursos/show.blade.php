@@ -7,6 +7,7 @@
 
 <div class="encabezado">
     <h1>{{ $curso->asignatura }} · Comisión {{ $curso->comision }}</h1>
+    <a href="{{ route('cursos.indicadores', $curso) }}" class="boton">Indicadores al corte</a>
 </div>
 
 @include('partials.mensajes')
