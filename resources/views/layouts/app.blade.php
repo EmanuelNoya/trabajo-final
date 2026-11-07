@@ -17,8 +17,9 @@
                             <a href="{{ route('tablero.index') }}">Mis cursos</a>
                             @break
                         @case('responsable')
-                            <a href="{{ route('tablero.index') }}">Cursos de la carrera</a>
+                            <a href="{{ route('carrera.estado') }}">Cursos de la carrera</a>
                             <a href="{{ route('umbrales.index') }}">Umbrales</a>
+                            <a href="{{ route('modelo.vigente') }}">Modelo</a>
                             @break
                         @case('analista')
                             <a href="{{ route('cursos.index') }}">Cursos</a>

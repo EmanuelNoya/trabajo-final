@@ -14,6 +14,8 @@ use App\Servicios\ModeloRiesgo;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
+use Illuminate\Support\Str;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class TableroController extends Controller
 {
@@ -31,22 +33,82 @@ class TableroController extends Controller
 
     public function show(Request $request, Curso $curso, CalculadoraIndicadores $calculadora): View
     {
-        Gate::authorize('verTablero', $curso); // 403 si el curso no es del usuario
+        Gate::authorize('verTablero', $curso);
 
         $curso->load(['carrera', 'docente']);
-        $ejecucion = $curso->ejecucionActual()->with('modelo')->first();
+        $filtro = $this->filtro($request);
+        $datos = $this->listado($curso, $filtro);
 
-        // Criterio 3: sin estimación, se indican los pasos que faltan
-        if ($ejecucion === null) {
+        // HU-09, criterio 3: sin estimación, se indican los pasos que faltan
+        if ($datos === null) {
             return view('tablero.sin-estimacion', [
                 'curso' => $curso,
                 'pendientes' => $calculadora->verificar($curso),
             ]);
         }
 
+        return view('tablero.show', ['curso' => $curso, 'filtro' => $filtro] + $datos);
+    }
+
+    /**
+     * HU-14: el mismo listado del tablero, en el mismo orden y con el mismo filtro, como CSV.
+     */
+    public function exportar(Request $request, Curso $curso): StreamedResponse
+    {
+        Gate::authorize('verTablero', $curso);
+
+        $filtro = $this->filtro($request);
+        $datos = $this->listado($curso, $filtro);
+        abort_if($datos === null, 404);
+
+        $nombre = Str::slug("{$curso->asignatura} {$curso->comision} {$curso->periodo_lectivo}")
+            . ($filtro ? "-riesgo-{$filtro}" : '')
+            . '.csv';
+
+        $decimal = fn ($v) => number_format((float) $v, 4, ',', '');
+
+        return response()->streamDownload(function () use ($datos, $decimal) {
+            $salida = fopen('php://output', 'w');
+            fwrite($salida, "\xEF\xBB\xBF"); // BOM: Excel reconoce UTF-8 y muestra bien las tildes
+
+            fputcsv($salida, [
+                'legajo', 'apellido y nombre', 'probabilidad', 'nivel',
+                'asistencia', 'calificaciones', 'entregas', 'participacion',
+            ], ';', '"', '');
+
+            foreach ($datos['lista'] as $estimacion) {
+                $estudiante = $estimacion->inscripcion->estudiante;
+
+                fputcsv($salida, [
+                    $estudiante->legajo,
+                    "{$estudiante->apellido}, {$estudiante->nombre}",
+                    $decimal($estimacion->probabilidad),
+                    UmbralRiesgo::NIVELES[$estimacion->nivel],
+                    $decimal($estimacion->asistencia),
+                    $decimal($estimacion->calificaciones),
+                    $decimal($estimacion->entregas),
+                    $decimal($estimacion->participacion),
+                ], ';', '"', '');
+            }
+
+            fclose($salida);
+        }, $nombre, ['Content-Type' => 'text/csv; charset=UTF-8']);
+    }
+
+    /**
+     * Estimación actual del curso con el nivel de cada estudiante, de mayor a menor probabilidad.
+     * La usan el tablero y la exportación: así el archivo es exactamente lo que se ve.
+     */
+    private function listado(Curso $curso, ?string $filtro): ?array
+    {
+        $ejecucion = $curso->ejecucionActual()->with('modelo')->first();
+
+        if ($ejecucion === null) {
+            return null;
+        }
+
         $umbral = UmbralRiesgo::vigenteDe($curso->carrera_id);
 
-        // Criterio 1: de mayor a menor probabilidad, con el nivel derivado de los umbrales vigentes
         $estudiantes = $ejecucion->estimaciones()
             ->with('inscripcion.estudiante')
             ->orderByDesc('probabilidad')
@@ -56,14 +118,16 @@ class TableroController extends Controller
         $conteo = collect(UmbralRiesgo::NIVELES)
             ->map(fn ($etiqueta, $nivel) => $estudiantes->where('nivel', $nivel)->count());
 
-        // Criterio 2: filtro por nivel
-        $filtro = in_array($request->query('nivel'), array_keys(UmbralRiesgo::NIVELES), true)
-            ? $request->query('nivel')
-            : null;
-
         $lista = $filtro ? $estudiantes->where('nivel', $filtro)->values() : $estudiantes;
 
-        return view('tablero.show', compact('curso', 'ejecucion', 'umbral', 'conteo', 'lista', 'filtro'));
+        return compact('ejecucion', 'umbral', 'conteo', 'lista');
+    }
+
+    private function filtro(Request $request): ?string
+    {
+        $nivel = $request->query('nivel');
+
+        return in_array($nivel, array_keys(UmbralRiesgo::NIVELES), true) ? $nivel : null;
     }
 
     public function estudiante(Curso $curso, Inscripcion $inscripcion): View

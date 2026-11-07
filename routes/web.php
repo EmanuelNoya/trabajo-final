@@ -10,6 +10,8 @@ use App\Http\Controllers\Analista\IncorporacionController;
 use App\Http\Controllers\Analista\IndicadoresController;
 use App\Http\Controllers\Analista\EstimacionController;
 use App\Http\Controllers\Responsable\UmbralController;
+use App\Http\Controllers\Responsable\EstadoCarreraController;
+use App\Http\Controllers\Responsable\ModeloController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('guest')->group(function () {
@@ -36,6 +38,8 @@ Route::middleware('auth')->group(function () {
         Route::get('/tablero/{curso}', [TableroController::class, 'show'])->name('tablero.show');
         Route::get('/tablero/{curso}/estudiantes/{inscripcion}', [TableroController::class, 'estudiante'])
             ->name('tablero.estudiante');
+        Route::get('/tablero/{curso}/exportar', [TableroController::class, 'exportar'])
+            ->name('tablero.exportar');
     });
 
     Route::middleware('rol:analista')->prefix('analista')->group(function () {
@@ -70,5 +74,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/umbrales', [UmbralController::class, 'index'])->name('umbrales.index');
         Route::get('/umbrales/{carrera}', [UmbralController::class, 'edit'])->name('umbrales.edit');
         Route::post('/umbrales/{carrera}', [UmbralController::class, 'store'])->name('umbrales.store');
+        Route::get('/carrera', EstadoCarreraController::class)->name('carrera.estado');
+        Route::get('/modelo', ModeloController::class)->name('modelo.vigente');
     });
 });

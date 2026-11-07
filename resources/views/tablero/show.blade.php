@@ -8,10 +8,13 @@
 @endphp
 
 @section('contenido')
-<p><a href="{{ route('tablero.index') }}">← Cursos</a></p>
+<p><a href="{{ route(auth()->user()->rol === 'responsable' ? 'carrera.estado' : 'tablero.index') }}">← Cursos</a></p>
 
 <div class="encabezado">
     <h1>{{ $curso->asignatura }} · Comisión {{ $curso->comision }}</h1>
+    <a href="{{ route('tablero.exportar', [$curso, 'nivel' => $filtro]) }}" class="boton">
+        Exportar CSV{{ $filtro ? ' (' . App\Models\UmbralRiesgo::NIVELES[$filtro] . ')' : '' }}
+    </a>
 </div>
 
 <p class="ayuda">
