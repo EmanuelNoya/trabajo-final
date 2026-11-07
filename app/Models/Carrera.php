@@ -23,4 +23,9 @@ class Carrera extends Model
     {
         return $this->hasMany(Curso::class);
     }
+
+    public function umbrales(): HasMany
+    {
+        return $this->hasMany(UmbralRiesgo::class);
+    }
 }
