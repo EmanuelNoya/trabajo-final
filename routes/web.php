@@ -9,6 +9,7 @@ use App\Http\Controllers\Analista\CursoController;
 use App\Http\Controllers\Analista\IncorporacionController;
 use App\Http\Controllers\Analista\IndicadoresController;
 use App\Http\Controllers\Analista\EstimacionController;
+use App\Http\Controllers\Responsable\UmbralController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('guest')->group(function () {
@@ -63,5 +64,11 @@ Route::middleware('auth')->group(function () {
             ->name('usuarios.desactivar');
         Route::patch('usuarios/{usuario}/activar', [UsuarioController::class, 'activar'])
             ->name('usuarios.activar');
+    });
+
+    Route::middleware('rol:responsable')->group(function () {
+        Route::get('/umbrales', [UmbralController::class, 'index'])->name('umbrales.index');
+        Route::get('/umbrales/{carrera}', [UmbralController::class, 'edit'])->name('umbrales.edit');
+        Route::post('/umbrales/{carrera}', [UmbralController::class, 'store'])->name('umbrales.store');
     });
 });
