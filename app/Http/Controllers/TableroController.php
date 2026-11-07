@@ -5,6 +5,12 @@ namespace App\Http\Controllers;
 use App\Models\Curso;
 use App\Models\UmbralRiesgo;
 use App\Servicios\CalculadoraIndicadores;
+use App\Models\ActividadSemanal;
+use App\Models\Estimacion;
+use App\Models\Evaluacion;
+use App\Models\Inscripcion;
+use App\Models\ParticipacionForo;
+use App\Servicios\ModeloRiesgo;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
@@ -58,5 +64,61 @@ class TableroController extends Controller
         $lista = $filtro ? $estudiantes->where('nivel', $filtro)->values() : $estudiantes;
 
         return view('tablero.show', compact('curso', 'ejecucion', 'umbral', 'conteo', 'lista', 'filtro'));
+    }
+
+    public function estudiante(Curso $curso, Inscripcion $inscripcion): View
+    {
+        Gate::authorize('verTablero', $curso); // criterio 3
+        abort_unless($inscripcion->curso_id === $curso->id, 404); // la inscripción tiene que ser de este curso
+
+        $curso->load('carrera');
+        $inscripcion->load('estudiante');
+
+        $ejecucion = $curso->ejecucionActual()->with('modelo')->firstOrFail();
+        $estimacion = $ejecucion->estimaciones()->where('inscripcion_id', $inscripcion->id)->firstOrFail();
+        $umbral = UmbralRiesgo::vigenteDe($curso->carrera_id);
+
+        // Criterio 1: indicadores, probabilidad y nivel
+        $valores = collect(ModeloRiesgo::INDICADORES)
+            ->mapWithKeys(fn ($i) => [$i => (float) $estimacion->{$i}])
+            ->all();
+
+        // Criterio 2: aporte de cada indicador según el modelo usado en esa estimación...
+        $contribuciones = ModeloRiesgo::cargar($ejecucion->modelo)->contribuciones($valores);
+
+        // ...y comparación con el promedio del curso en la misma estimación
+        $promedios = $ejecucion->estimaciones()
+            ->selectRaw('AVG(asistencia) AS asistencia, AVG(calificaciones) AS calificaciones,
+                        AVG(entregas) AS entregas, AVG(participacion) AS participacion')
+            ->first()
+            ->only(ModeloRiesgo::INDICADORES);
+
+        // Registros que originaron los indicadores: los de las cargas usadas en esa estimación
+        $cargas = $ejecucion->cargas()->pluck('carga_archivo.id');
+        $semanas = intdiv((int) $curso->fecha_inicio->diffInDays($ejecucion->fecha_corte), 7) + 1;
+
+        $actividad = ActividadSemanal::where('inscripcion_id', $inscripcion->id)
+            ->whereIn('carga_id', $cargas)
+            ->pluck('con_actividad', 'semana');
+
+        $foros = ParticipacionForo::where('inscripcion_id', $inscripcion->id)
+            ->whereIn('carga_id', $cargas)
+            ->pluck('intervenciones', 'semana');
+
+        $evaluaciones = Evaluacion::whereIn('carga_id', $cargas)
+            ->with(['entregas' => fn ($q) => $q->where('inscripcion_id', $inscripcion->id)])
+            ->orderBy('fecha_vencimiento')
+            ->get();
+
+        // Evolución: todas las estimaciones del estudiante, de la más reciente a la más antigua
+        $historial = Estimacion::where('inscripcion_id', $inscripcion->id)
+            ->with('ejecucion')
+            ->orderByDesc('ejecucion_id')
+            ->get();
+
+        return view('tablero.estudiante', compact(
+            'curso', 'inscripcion', 'ejecucion', 'estimacion', 'umbral', 'valores',
+            'contribuciones', 'promedios', 'semanas', 'actividad', 'foros', 'evaluaciones', 'historial'
+        ));
     }
 }

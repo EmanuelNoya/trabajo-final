@@ -12,6 +12,13 @@ class ModeloRiesgo
 {
     public const INDICADORES = ['asistencia', 'calificaciones', 'entregas', 'participacion'];
 
+    public const ETIQUETAS = [
+        'asistencia' => 'Asistencia',
+        'calificaciones' => 'Calificaciones',
+        'entregas' => 'Entregas',
+        'participacion' => 'Participación',
+    ];
+
     private function __construct(public readonly array $datos)
     {
     }
@@ -66,18 +73,36 @@ class ModeloRiesgo
     }
 
     /**
+     * Aporte de cada indicador al riesgo: coef · (x − media) / desvío.
+     * Positivo = eleva el riesgo; negativo = lo reduce. Se mide respecto de la media de entrenamiento.
+     * Ordenado de mayor a menor aporte.
+     *
+     * @param  array<string, float>  $indicadores
+     * @return array<string, float>
+     */
+    public function contribuciones(array $indicadores): array
+    {
+        $aportes = [];
+
+        foreach (self::INDICADORES as $i) {
+            $aportes[$i] = $this->datos['coeficientes'][$i]
+                * ($indicadores[$i] - $this->datos['media'][$i]) / $this->datos['desvio'][$i];
+        }
+
+        arsort($aportes);
+
+        return $aportes;
+    }
+
+    /**
      * Probabilidad de desaprobar o abandonar, entre 0 y 1.
+     * Se calcula a partir de los mismos aportes que muestra la situación individual.
      *
      * @param  array<string, float>  $indicadores
      */
     public function probabilidad(array $indicadores): float
     {
-        $z = (float) $this->datos['intercepto'];
-
-        foreach (self::INDICADORES as $i) {
-            $z += $this->datos['coeficientes'][$i]
-                * ($indicadores[$i] - $this->datos['media'][$i]) / $this->datos['desvio'][$i];
-        }
+        $z = (float) $this->datos['intercepto'] + array_sum($this->contribuciones($indicadores));
 
         return 1 / (1 + exp(-$z));
     }

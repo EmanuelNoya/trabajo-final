@@ -58,7 +58,11 @@
             @forelse ($lista as $estimacion)
                 <tr>
                     <td>{{ $estimacion->inscripcion->estudiante->legajo }}</td>
-                    <td>{{ $estimacion->inscripcion->estudiante->apellido }}, {{ $estimacion->inscripcion->estudiante->nombre }}</td>
+                    <td>
+                        <a href="{{ route('tablero.estudiante', [$curso, $estimacion->inscripcion]) }}">
+                            {{ $estimacion->inscripcion->estudiante->apellido }}, {{ $estimacion->inscripcion->estudiante->nombre }}
+                        </a>
+                    </td>
                     <td><strong>{{ $porcentaje($estimacion->probabilidad) }}</strong></td>
                     <td><span class="etiqueta {{ $estimacion->nivel }}">{{ App\Models\UmbralRiesgo::NIVELES[$estimacion->nivel] }}</span></td>
                     <td>{{ $indicador($estimacion->asistencia) }}</td>
