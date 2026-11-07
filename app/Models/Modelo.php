@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Modelo extends Model
 {
@@ -24,5 +25,10 @@ class Modelo extends Model
             'fecha_entrenamiento' => 'date',
             'vigente' => 'boolean',
         ];
+    }
+
+    public function importancias(): HasMany
+    {
+        return $this->hasMany(ImportanciaIndicador::class);
     }
 }

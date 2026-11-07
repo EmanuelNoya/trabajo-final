@@ -85,5 +85,10 @@ class DatabaseSeeder extends Seeder
             'ruta' => 'resources/modelos/modelo_rl_v1.json',
             '--fecha' => '2026-10-19',
         ]);
+
+        Artisan::call('modelo:importancia', [
+            'version' => 'rl-oulad-30-v1',
+            'ruta' => 'resources/modelos/resultados.json',
+        ]);
     }
 }
