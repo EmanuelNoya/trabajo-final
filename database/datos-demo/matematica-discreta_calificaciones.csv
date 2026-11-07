@@ -1,0 +1,151 @@
+legajo;evaluacion;tipo;fecha_vencimiento;fecha_entrega;calificacion
+VINF03001;TP 1;Trabajo práctico;2026-08-16;2026-08-14;7,5
+VINF03002;TP 1;Trabajo práctico;2026-08-16;;
+VINF03003;TP 1;Trabajo práctico;2026-08-16;2026-08-16;7,5
+VINF03004;TP 1;Trabajo práctico;2026-08-16;2026-08-13;8,5
+VINF03005;TP 1;Trabajo práctico;2026-08-16;2026-08-15;8,5
+VINF03006;TP 1;Trabajo práctico;2026-08-16;2026-08-14;7,5
+VINF03007;TP 1;Trabajo práctico;2026-08-16;2026-08-15;9
+VINF03008;TP 1;Trabajo práctico;2026-08-16;2026-08-16;9
+VINF03009;TP 1;Trabajo práctico;2026-08-16;;
+VINF03010;TP 1;Trabajo práctico;2026-08-16;2026-08-15;10
+VINF03011;TP 1;Trabajo práctico;2026-08-16;2026-08-16;10
+VINF03012;TP 1;Trabajo práctico;2026-08-16;2026-08-14;9,5
+VINF03013;TP 1;Trabajo práctico;2026-08-16;2026-08-15;10
+VINF03014;TP 1;Trabajo práctico;2026-08-16;;
+VINF03015;TP 1;Trabajo práctico;2026-08-16;;
+VINF03016;TP 1;Trabajo práctico;2026-08-16;2026-08-16;9
+VINF03017;TP 1;Trabajo práctico;2026-08-16;2026-08-13;6
+VINF03018;TP 1;Trabajo práctico;2026-08-16;2026-08-15;8,5
+VINF03019;TP 1;Trabajo práctico;2026-08-16;2026-08-14;9,5
+VINF03020;TP 1;Trabajo práctico;2026-08-16;2026-08-14;8,5
+VINF03021;TP 1;Trabajo práctico;2026-08-16;2026-08-14;10
+VINF03022;TP 1;Trabajo práctico;2026-08-16;2026-08-15;9
+VINF03023;TP 1;Trabajo práctico;2026-08-16;2026-08-15;9
+VINF03024;TP 1;Trabajo práctico;2026-08-16;2026-08-14;7
+VINF03025;TP 1;Trabajo práctico;2026-08-16;2026-08-16;10
+VINF03026;TP 1;Trabajo práctico;2026-08-16;2026-08-14;6,5
+VINF03027;TP 1;Trabajo práctico;2026-08-16;2026-08-15;7
+VINF03028;TP 1;Trabajo práctico;2026-08-16;2026-08-13;9,5
+VINF03029;TP 1;Trabajo práctico;2026-08-16;2026-08-13;9
+VINF03030;TP 1;Trabajo práctico;2026-08-16;2026-08-16;3,5
+VINF03001;Foro 1;Foro;2026-08-23;2026-08-24;7
+VINF03002;Foro 1;Foro;2026-08-23;;
+VINF03003;Foro 1;Foro;2026-08-23;2026-08-28;5,5
+VINF03004;Foro 1;Foro;2026-08-23;2026-08-20;7,5
+VINF03005;Foro 1;Foro;2026-08-23;2026-08-21;7,5
+VINF03006;Foro 1;Foro;2026-08-23;;
+VINF03007;Foro 1;Foro;2026-08-23;2026-08-22;9
+VINF03008;Foro 1;Foro;2026-08-23;2026-08-20;10
+VINF03009;Foro 1;Foro;2026-08-23;2026-08-20;9,5
+VINF03010;Foro 1;Foro;2026-08-23;2026-08-21;10
+VINF03011;Foro 1;Foro;2026-08-23;2026-08-21;10
+VINF03012;Foro 1;Foro;2026-08-23;2026-08-22;10
+VINF03013;Foro 1;Foro;2026-08-23;2026-08-23;9
+VINF03014;Foro 1;Foro;2026-08-23;;
+VINF03015;Foro 1;Foro;2026-08-23;;
+VINF03016;Foro 1;Foro;2026-08-23;2026-08-22;10
+VINF03017;Foro 1;Foro;2026-08-23;;
+VINF03018;Foro 1;Foro;2026-08-23;2026-08-20;10
+VINF03019;Foro 1;Foro;2026-08-23;2026-08-22;9
+VINF03020;Foro 1;Foro;2026-08-23;;
+VINF03021;Foro 1;Foro;2026-08-23;2026-08-21;9,5
+VINF03022;Foro 1;Foro;2026-08-23;2026-08-22;6,5
+VINF03023;Foro 1;Foro;2026-08-23;2026-08-23;10
+VINF03024;Foro 1;Foro;2026-08-23;;
+VINF03025;Foro 1;Foro;2026-08-23;2026-08-22;8,5
+VINF03026;Foro 1;Foro;2026-08-23;2026-08-22;10
+VINF03027;Foro 1;Foro;2026-08-23;2026-08-21;8
+VINF03028;Foro 1;Foro;2026-08-23;;
+VINF03029;Foro 1;Foro;2026-08-23;2026-08-23;9,5
+VINF03030;Foro 1;Foro;2026-08-23;;
+VINF03001;TP 2;Trabajo práctico;2026-08-30;2026-08-30;8
+VINF03002;TP 2;Trabajo práctico;2026-08-30;;
+VINF03003;TP 2;Trabajo práctico;2026-08-30;2026-08-30;8,5
+VINF03004;TP 2;Trabajo práctico;2026-08-30;2026-08-29;7
+VINF03005;TP 2;Trabajo práctico;2026-08-30;;
+VINF03006;TP 2;Trabajo práctico;2026-08-30;2026-08-28;9
+VINF03007;TP 2;Trabajo práctico;2026-08-30;2026-08-30;7,5
+VINF03008;TP 2;Trabajo práctico;2026-08-30;2026-08-27;8
+VINF03009;TP 2;Trabajo práctico;2026-08-30;2026-08-29;7
+VINF03010;TP 2;Trabajo práctico;2026-08-30;2026-08-29;9
+VINF03011;TP 2;Trabajo práctico;2026-08-30;2026-08-29;10
+VINF03012;TP 2;Trabajo práctico;2026-08-30;2026-08-30;9,5
+VINF03013;TP 2;Trabajo práctico;2026-08-30;2026-08-30;10
+VINF03014;TP 2;Trabajo práctico;2026-08-30;;
+VINF03015;TP 2;Trabajo práctico;2026-08-30;2026-08-29;3,5
+VINF03016;TP 2;Trabajo práctico;2026-08-30;2026-08-29;10
+VINF03017;TP 2;Trabajo práctico;2026-08-30;;
+VINF03018;TP 2;Trabajo práctico;2026-08-30;2026-08-28;9
+VINF03019;TP 2;Trabajo práctico;2026-08-30;2026-08-29;8
+VINF03020;TP 2;Trabajo práctico;2026-08-30;2026-08-28;7,5
+VINF03021;TP 2;Trabajo práctico;2026-08-30;2026-08-29;9
+VINF03022;TP 2;Trabajo práctico;2026-08-30;2026-08-28;9,5
+VINF03023;TP 2;Trabajo práctico;2026-08-30;2026-08-30;10
+VINF03024;TP 2;Trabajo práctico;2026-08-30;2026-08-28;7
+VINF03025;TP 2;Trabajo práctico;2026-08-30;2026-08-29;8,5
+VINF03026;TP 2;Trabajo práctico;2026-08-30;2026-08-28;9
+VINF03027;TP 2;Trabajo práctico;2026-08-30;2026-09-03;8
+VINF03028;TP 2;Trabajo práctico;2026-08-30;2026-08-30;9
+VINF03029;TP 2;Trabajo práctico;2026-08-30;2026-08-28;9
+VINF03030;TP 2;Trabajo práctico;2026-08-30;;
+VINF03001;Actividad práctica 1;Actividad práctica;2026-09-06;2026-09-04;9
+VINF03002;Actividad práctica 1;Actividad práctica;2026-09-06;;
+VINF03003;Actividad práctica 1;Actividad práctica;2026-09-06;2026-09-03;8
+VINF03004;Actividad práctica 1;Actividad práctica;2026-09-06;2026-09-03;8
+VINF03005;Actividad práctica 1;Actividad práctica;2026-09-06;2026-09-03;10
+VINF03006;Actividad práctica 1;Actividad práctica;2026-09-06;2026-09-05;7,5
+VINF03007;Actividad práctica 1;Actividad práctica;2026-09-06;2026-09-04;8
+VINF03008;Actividad práctica 1;Actividad práctica;2026-09-06;2026-09-06;10
+VINF03009;Actividad práctica 1;Actividad práctica;2026-09-06;;
+VINF03010;Actividad práctica 1;Actividad práctica;2026-09-06;2026-09-06;9,5
+VINF03011;Actividad práctica 1;Actividad práctica;2026-09-06;;
+VINF03012;Actividad práctica 1;Actividad práctica;2026-09-06;2026-09-05;10
+VINF03013;Actividad práctica 1;Actividad práctica;2026-09-06;2026-09-04;10
+VINF03014;Actividad práctica 1;Actividad práctica;2026-09-06;;
+VINF03015;Actividad práctica 1;Actividad práctica;2026-09-06;;
+VINF03016;Actividad práctica 1;Actividad práctica;2026-09-06;2026-09-03;8
+VINF03017;Actividad práctica 1;Actividad práctica;2026-09-06;2026-09-06;8
+VINF03018;Actividad práctica 1;Actividad práctica;2026-09-06;2026-09-03;10
+VINF03019;Actividad práctica 1;Actividad práctica;2026-09-06;2026-09-04;9
+VINF03020;Actividad práctica 1;Actividad práctica;2026-09-06;2026-09-04;6,5
+VINF03021;Actividad práctica 1;Actividad práctica;2026-09-06;2026-09-03;10
+VINF03022;Actividad práctica 1;Actividad práctica;2026-09-06;2026-09-05;8,5
+VINF03023;Actividad práctica 1;Actividad práctica;2026-09-06;2026-09-03;10
+VINF03024;Actividad práctica 1;Actividad práctica;2026-09-06;2026-09-05;7
+VINF03025;Actividad práctica 1;Actividad práctica;2026-09-06;2026-09-03;10
+VINF03026;Actividad práctica 1;Actividad práctica;2026-09-06;2026-09-05;9
+VINF03027;Actividad práctica 1;Actividad práctica;2026-09-06;2026-09-07;7,5
+VINF03028;Actividad práctica 1;Actividad práctica;2026-09-06;2026-09-06;8
+VINF03029;Actividad práctica 1;Actividad práctica;2026-09-06;2026-09-04;8,5
+VINF03030;Actividad práctica 1;Actividad práctica;2026-09-06;;
+VINF03001;Parcial 1;Examen parcial;2026-09-13;;
+VINF03002;Parcial 1;Examen parcial;2026-09-13;;
+VINF03003;Parcial 1;Examen parcial;2026-09-13;2026-09-13;9
+VINF03004;Parcial 1;Examen parcial;2026-09-13;2026-09-10;6,5
+VINF03005;Parcial 1;Examen parcial;2026-09-13;;
+VINF03006;Parcial 1;Examen parcial;2026-09-13;2026-09-12;7,5
+VINF03007;Parcial 1;Examen parcial;2026-09-13;;
+VINF03008;Parcial 1;Examen parcial;2026-09-13;2026-09-10;8
+VINF03009;Parcial 1;Examen parcial;2026-09-13;2026-09-11;9
+VINF03010;Parcial 1;Examen parcial;2026-09-13;2026-09-13;9
+VINF03011;Parcial 1;Examen parcial;2026-09-13;2026-09-13;9
+VINF03012;Parcial 1;Examen parcial;2026-09-13;2026-09-11;10
+VINF03013;Parcial 1;Examen parcial;2026-09-13;2026-09-13;9
+VINF03014;Parcial 1;Examen parcial;2026-09-13;;
+VINF03015;Parcial 1;Examen parcial;2026-09-13;;
+VINF03016;Parcial 1;Examen parcial;2026-09-13;2026-09-11;8
+VINF03017;Parcial 1;Examen parcial;2026-09-13;;
+VINF03018;Parcial 1;Examen parcial;2026-09-13;2026-09-10;8
+VINF03019;Parcial 1;Examen parcial;2026-09-13;2026-09-11;9,5
+VINF03020;Parcial 1;Examen parcial;2026-09-13;2026-09-11;7,5
+VINF03021;Parcial 1;Examen parcial;2026-09-13;2026-09-12;9
+VINF03022;Parcial 1;Examen parcial;2026-09-13;2026-09-12;7
+VINF03023;Parcial 1;Examen parcial;2026-09-13;2026-09-13;9
+VINF03024;Parcial 1;Examen parcial;2026-09-13;2026-09-10;9
+VINF03025;Parcial 1;Examen parcial;2026-09-13;2026-09-13;9,5
+VINF03026;Parcial 1;Examen parcial;2026-09-13;2026-09-12;9
+VINF03027;Parcial 1;Examen parcial;2026-09-13;2026-09-13;6
+VINF03028;Parcial 1;Examen parcial;2026-09-13;2026-09-13;8,5
+VINF03029;Parcial 1;Examen parcial;2026-09-13;2026-09-11;9
+VINF03030;Parcial 1;Examen parcial;2026-09-13;2026-09-13;4,5

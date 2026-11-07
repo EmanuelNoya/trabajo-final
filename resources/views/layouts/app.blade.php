@@ -11,7 +11,7 @@
         @php
             $yo = auth()->user();
             // Las vistas de un curso reciben la variable $curso: con ella se arman las opciones del curso
-            $cursoActual = isset($curso) && $curso instanceof App\Models\Curso ? $curso : null;
+            $cursoActual = request()->route('curso') instanceof App\Models\Curso ? request()->route('curso') : null;
 
             $enlaces = match ($yo->rol) {
                 'docente' => array_filter([

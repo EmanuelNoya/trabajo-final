@@ -23,7 +23,7 @@
         <h1>Tablero del curso</h1>
         <p class="subtitulo">
             {{ $curso->asignatura }} · Comisión {{ $curso->comision }} ·
-            Estimación del {{ $ejecucion->created_at->format('d/m/Y') }}, al 30 % del curso
+            Estimación del {{ $ejecucion->created_at->format('d/m/Y') }}, al 30&nbsp;% del curso
             (semana {{ $semanaCorte }} de {{ $curso->cantidadSemanas() }}) ·
             Modelo {{ $ejecucion->modelo->version }}
         </p>

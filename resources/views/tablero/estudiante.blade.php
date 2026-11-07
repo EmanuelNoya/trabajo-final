@@ -37,7 +37,7 @@
         <span class="probabilidad-grande {{ $nivel }}">{{ $decimal($estimacion->probabilidad) }}</span>
         <span class="etiqueta {{ $nivel }}">{{ UmbralRiesgo::NIVELES[$nivel] }}</span>
         <p class="nota">
-            Estimación del {{ $ejecucion->created_at->format('d/m/Y') }} · corte al 30 %
+            Estimación del {{ $ejecucion->created_at->format('d/m/Y') }} · corte al 30&nbsp;%
             ({{ $ejecucion->fecha_corte->format('d/m/Y') }}) · Modelo {{ $ejecucion->modelo->version }}
         </p>
     </div>

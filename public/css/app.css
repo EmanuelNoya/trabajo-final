@@ -103,6 +103,7 @@ h2 { font-size: 1.1rem; margin: 0 0 .75rem; }
 .ver:hover { text-decoration: underline; }
 .detalle { margin-top: .2rem; font-size: .8rem; color: var(--texto-tenue); }
 .texto-alto { color: var(--alto); font-weight: 700; }
+.cifra { white-space: nowrap; }
 
 /* ---------- Etiquetas de nivel y de estado ---------- */
 

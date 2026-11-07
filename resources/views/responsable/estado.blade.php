@@ -3,7 +3,7 @@
 @section('titulo', 'Cursos de la carrera')
 
 @php
-    $pct = fn ($v) => number_format($v, 1, ',', '') . ' %';
+    $pct = fn ($v) => number_format($v, 1, ',', '') . "\u{00A0}%";
     $carreras = $filas->pluck('curso.carrera.nombre')->unique()->implode(' · ');
 @endphp
 
@@ -23,9 +23,9 @@
                 <th>Comisión</th>
                 <th>Docente</th>
                 <th>Estudiantes</th>
-                <th>Alto</th>
-                <th>Medio</th>
-                <th>Bajo</th>
+                <th class="cifra">Alto</th>
+                <th class="cifra">Medio</th>
+                <th class="cifra">Bajo</th>
                 <th>Última estimación</th>
                 <th><span class="detalle">Tablero</span></th>
             </tr>
