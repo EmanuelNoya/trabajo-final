@@ -1,58 +1,161 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Sistema de Detección Temprana de Riesgo Académico
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Prototipo del Trabajo Final de Grado de la Licenciatura en Informática (Universidad Siglo 21).
+Autor: Emanuel Noya.
 
-## About Laravel
+El sistema estima, al 30 % del cursado, la probabilidad de que cada estudiante de un curso virtual
+no lo apruebe, a partir de cuatro indicadores calculados con los archivos que exporta el aula virtual:
+asistencia, calificaciones, entregas en plazo y participación en foros. La estimación la realiza un
+modelo de regresión logística entrenado con el conjunto de datos OULAD y se presenta al docente
+como un listado priorizado por nivel de riesgo.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+Live demo:
+[https://tfg-noya.free.nf/](https://tfg-noya.free.nf/)
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Funcionalidades por perfil
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+| Perfil | Qué puede hacer | Historias de usuario |
+|---|---|---|
+| Todos | Iniciar sesión, cerrar sesión, recuperar la contraseña | HU-01 |
+| Administrador | Crear, editar, activar y desactivar usuarios | HU-02 |
+| Analista de datos | Registrar cursos, incorporar la nómina y los archivos de actividad, calificaciones y foros, revisar los indicadores y ejecutar la estimación | HU-03 a HU-07 |
+| Docente | Ver el tablero de sus cursos, filtrar por nivel, exportar el listado y consultar la situación individual de cada estudiante | HU-08 a HU-10, HU-14 |
+| Responsable académico | Configurar los umbrales de riesgo con vista previa, ver el estado de los cursos de la carrera y la importancia de los indicadores | HU-11 a HU-13 |
 
-## Learning Laravel
+## Requisitos
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+- PHP 8.3 o superior, con las extensiones `pdo_mysql`, `mbstring`, `openssl`, `fileinfo` y `tokenizer`.
+- Composer 2.
+- MariaDB 10.6 o superior (desarrollado con MariaDB 11.4).
+- Conexión a internet para `composer install` y para el gráfico de la situación individual
+  (Chart.js se carga desde un CDN). No hace falta Node.js: la interfaz no requiere compilación.
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+## Puesta en marcha
 
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
+1. Descomprimir el código fuente y abrir una terminal en la carpeta del proyecto.
 
-## Agentic Development
+2. Instalar las dependencias:
 
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+   ```
+   composer install
+   ```
 
-```bash
-composer require laravel/boost --dev
+3. Crear la base de datos vacía en MariaDB:
 
-php artisan boost:install
-```
+   ```sql
+   CREATE DATABASE tfgnoyadb CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+   ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+4. Crear el archivo de configuración y generar la clave de la aplicación:
 
-## Contributing
+   ```
+   copy .env.example .env        (en Linux o macOS: cp .env.example .env)
+   php artisan key:generate
+   ```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+   Si el usuario de MariaDB no es `root` sin contraseña, completar `DB_USERNAME` y `DB_PASSWORD` en `.env`.
 
-## Code of Conduct
+5. Crear las tablas y cargar los datos de la Demo:
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+   ```
+   php artisan migrate:fresh --seeder=DemoSeeder
+   ```
 
-## Security Vulnerabilities
+   El proceso tarda unos segundos: incorpora los archivos de ejemplo con los mismos servicios que usa
+   la aplicación y ejecuta la estimación de tres cursos.
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+6. Iniciar el servidor:
 
-## License
+   ```
+   php artisan serve
+   ```
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+   y abrir <http://127.0.0.1:8000> en el navegador.
+
+## Usuarios de prueba
+
+Todos los usuarios tienen la contraseña `Prueba.2026$`. Son cuentas ficticias, creadas solo para la demo.
+
+| Correo | Perfil | Nombre | Curso a cargo |
+|---|---|---|---|
+| `docente@prueba.local` | Docente | Pérez, Marta Elena | Bases de Datos |
+| `msuarez@prueba.local` | Docente | Suárez, Martín | Programación I |
+| `arossi@prueba.local` | Docente | Rossi, Andrea | Matemática Discreta |
+| `pdiaz@prueba.local` | Docente | Díaz, Pablo | Sistemas Operativos |
+| `analista@prueba.local` | Analista de datos | Ríos, Daniel | — |
+| `responsable@prueba.local` | Responsable académico | Gómez, Laura | Licenciatura en Informática |
+| `administrador@prueba.local` | Administrador | Herrera, Silvia | — |
+
+Después de cinco intentos fallidos, el inicio de sesión se bloquea durante 15 minutos.
+
+## Datos de la Demo
+
+Los datos son ilustrativos: los estudiantes, los legajos y las calificaciones fueron generados para la
+demo y no corresponden a personas reales. Están en `database/datos-demo/`, en el mismo formato de
+archivo que acepta el sistema (CSV separado por punto y coma, con encabezados).
+
+- Cuatro cursos de la Licenciatura en Informática, período 2026-2C, del 03/08/2026 al 27/11/2026.
+  El momento de corte (30 % del cursado) es el 06/09/2026, en la semana 5.
+- **Bases de Datos, Programación I y Matemática Discreta** tienen los cuatro archivos incorporados y la
+  estimación ejecutada el 08/09/2026.
+- **Sistemas Operativos** solo tiene la nómina y la actividad. Sus calificaciones y foros están en
+  `database/datos-demo/para-incorporar/`, para incorporarlos desde la pantalla durante la Demo.
+- Los archivos de calificaciones de Bases de Datos y Sistemas Operativos incluyen dos filas con errores
+  a propósito (un legajo que no está en la nómina y una calificación fuera de escala), para mostrar el
+  rechazo de filas.
+- En cada curso hay tres bajas: dos antes del corte, que quedan fuera de la estimación, y una después.
+
+## Recorrido sugerido
+
+1. **Analista** (`analista@prueba.local`): entrar a *Cursos* → *Sistemas Operativos*, incorporar
+   `sistemas-operativos_calificaciones.csv` y `sistemas-operativos_foros.csv` desde
+   `database/datos-demo/para-incorporar/`, revisar el resultado (filas válidas, rechazadas y entregas
+   fuera de plazo), consultar los indicadores y ejecutar la estimación.
+2. **Docente** (`pdiaz@prueba.local`): abrir el tablero de Sistemas Operativos, filtrar por nivel,
+   exportar el listado y ver la situación individual de un estudiante en riesgo alto.
+3. **Responsable académico** (`responsable@prueba.local`): ver los cursos de la carrera ordenados por
+   proporción de riesgo alto, probar otros umbrales en la vista previa (por ejemplo 0,35 y 0,65) y
+   consultar la importancia de los indicadores.
+4. **Administrador** (`administrador@prueba.local`): crear un usuario y desactivar otro. Si el usuario
+   desactivado tiene una sesión abierta en otro navegador, se cierra en su siguiente acción.
+
+## Recuperación de contraseña en un entorno local
+
+Con la configuración de `.env.example` (`MAIL_MAILER=log`), el correo de restablecimiento no se envía:
+se escribe en `storage/logs/laravel.log`. Para probarlo, pedir el restablecimiento desde
+*¿Olvidaste tu contraseña?*, abrir ese archivo y copiar el enlace que aparece al final. El enlace es
+de un solo uso y vence a los 60 minutos. En producción se configura el servidor de correo del
+alojamiento (`MAIL_MAILER=smtp` y sus datos).
+
+## Otros datos de ejemplo
+
+`php artisan migrate:fresh --seed` carga una base mínima (un curso y un estudiante) en lugar de la
+Demo. En `database/datos-ejemplo/` hay archivos para probar las validaciones de la incorporación:
+nóminas y calificaciones con errores, un archivo sin una columna obligatoria y archivos de actividad y
+foros de distintas semanas.
+
+## Modelo de riesgo
+
+- `resources/modelos/modelo_rl_v1.json`: coeficientes, intercepto y parámetros de estandarización del
+  modelo `rl-oulad-30-v1`. El sistema verifica su resumen SHA-256 antes de usarlo.
+- `resources/modelos/resultados.json`: importancia de los indicadores y métricas de evaluación.
+- Una versión nueva del modelo se registra con `php artisan modelo:registrar {ruta} --fecha=AAAA-MM-DD`
+  y su importancia con `php artisan modelo:importancia {version} {ruta}`. El `DemoSeeder` ejecuta ambos
+  comandos.
+
+## Organización del código
+
+| Carpeta | Contenido |
+|---|---|
+| `app/Servicios` | Lectura e importación de archivos, cálculo de indicadores, evaluación del modelo y estimación |
+| `app/Http/Controllers` | Controladores agrupados por perfil (`Administrador`, `Analista`, `Responsable`) |
+| `app/Models` | Modelos Eloquent; las tablas y columnas están en español |
+| `app/Policies` | Acceso del docente solo a sus cursos y del responsable solo a su carrera |
+| `app/Console/Commands` | Registro del modelo y de la importancia de los indicadores |
+| `database/migrations` | Estructura de la base de datos |
+| `resources/views` | Vistas Blade |
+
+## Tecnologías
+
+Laravel 13 · PHP 8.3 · MariaDB · Blade · Chart.js 4.4.1. El modelo se entrenó en Python con pandas y
+scikit-learn; la aplicación lo evalúa en PHP a partir del archivo JSON, sin depender de Python.
